@@ -1,0 +1,13 @@
+{
+    "success_signup": "Success signup! Please check the email first.",
+    "signup_modal_title": "Success Signup",
+    "signup_modal_button_name": "Go to Login Page",
+    "create_account": "Create a new account",
+    "back_to_login": "login to your account",
+    "name": "Name",
+    "email": "Email Address",
+    "password": "Password",
+    "password_confirm": "Confirm Password",
+    "submitting": "Submitting...",
+    "sign_up": "Sign Up"
+}
