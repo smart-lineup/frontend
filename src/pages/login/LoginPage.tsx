@@ -38,7 +38,7 @@ const LoginPage: React.FC = () => {
             const response = await axios.post(`${config.backend}/auth/login`, {
                 email: data.email,
                 password: data.password
-            });
+            }, { withCredentials: true });
 
             navigate('/');
         } catch (e) {

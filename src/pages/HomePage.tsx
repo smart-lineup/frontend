@@ -1,115 +1,54 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage: React.FC = () => {
+    const navigate = useNavigate();
+
     return (
-        <div className="flex">
-            <Sidebar />
-            <div className="flex-1 flex flex-col">
-                <Navbar />
-                <div className="p-4 sm:ml-64 mt-14">
-                    <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700">
-                        <div className="grid grid-cols-3 gap-4 mb-4">
-                            <div className="flex items-center justify-center h-24 rounded-sm bg-gray-50 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center h-24 rounded-sm bg-gray-50 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center h-24 rounded-sm bg-gray-50 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
+        <div className="min-h-screen bg-gray-100">
+            <Navbar />
+
+            <main className="mt-20 p-4">
+                {/* YouTube Video */}
+                <div className="max-w-4xl mx-auto mb-8">
+                    <h2 className="text-2xl font-bold mb-4">Application Introduction</h2>
+                    <div className="relative" style={{ paddingBottom: '56.25%' /* 16:9 aspect ratio */ }}>
+                        <iframe
+                            className="absolute top-0 left-0 w-full h-full"
+                            src="https://www.youtube.com/embed/your-youtube-video-id" // Replace with your video ID
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        ></iframe>
+                    </div>
+                </div>
+
+                {/* How-to-Use Section */}
+                <div className="max-w-4xl mx-auto">
+                    <h2 className="text-2xl font-bold mb-4">How to Use</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="p-6 rounded-lg shadow-md bg-white">
+                            <h3 className="text-lg font-semibold mb-2">Step 1: Sign Up</h3>
+                            <p>Create an account to get started. You can sign up with your email.</p>
                         </div>
-                        <div className="flex items-center justify-center h-48 mb-4 rounded-sm bg-gray-50 dark:bg-gray-800">
-                            <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                </svg>
-                            </p>
+                        <div className="p-6 rounded-lg shadow-md bg-white">
+                            <h3 className="text-lg font-semibold mb-2">Step 2: Verify Email</h3>
+                            <p>Go to verify email for make your account is right.</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
+                        <div className="p-6 rounded-lg shadow-md bg-white">
+                            <h3 className="text-lg font-semibold mb-2">Step 3: Add Your Line</h3>
+                            <p>Add some line that you want to manage.</p>
                         </div>
-                        <div className="flex items-center justify-center h-48 mb-4 rounded-sm bg-gray-50 dark:bg-gray-800">
-                            <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                </svg>
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
-                            <div className="flex items-center justify-center rounded-sm bg-gray-50 h-28 dark:bg-gray-800">
-                                <p className="text-2xl text-gray-400 dark:text-gray-500">
-                                    <svg className="w-3.5 h-3.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 1v16M1 9h16" />
-                                    </svg>
-                                </p>
-                            </div>
+                        <div className="p-6 rounded-lg shadow-md bg-white">
+                            <h3 className="text-lg font-semibold mb-2">Step 4: Check Your Line</h3>
+                            <p>Check your line in web site.</p>
                         </div>
                     </div>
                 </div>
-            </div>
+                
+            </main>
         </div>
     );
 };
