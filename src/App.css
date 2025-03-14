@@ -1,3 +1,5 @@
+/* 한글 폰트 설정 - Noto Sans KR (상업적으로 무료) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 @import "tailwindcss";
 
 @keyframes dots {
@@ -7,7 +9,59 @@
   100% { content: "Verifying..."; }
 }
 
+@layer base {
+  body {
+    /* 원하는 배경색으로 오버라이드 */
+    background-color: var(--color-white) !important;
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 .verifying::after {
   content: "";
   animation: dots 1.5s infinite steps(3);
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* 다크모드 전환 애니메이션 */
+* {
+  transition-property: color, background-color, border-color;
+  transition-duration: 200ms;
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4a5568;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #718096;
 }
