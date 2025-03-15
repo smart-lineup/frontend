@@ -19,8 +19,8 @@ interface QueueEntry {
 interface Line {
   id: number;
   name: string;
-  queues?: Array<{id: number, name: string}>;
-  selectedQueue?: {id: number, name: string};
+  queues?: Array<{ id: number, name: string }>;
+  selectedQueue?: { id: number, name: string };
 }
 
 interface QueueManagerProps {
@@ -29,7 +29,7 @@ interface QueueManagerProps {
 
 const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
   const [queueEntries, setQueueEntries] = useState<QueueEntry[]>([]);
-  const [newEntry, setNewEntry] = useState<{name: string, phone: string}>({ name: '', phone: '' });
+  const [newEntry, setNewEntry] = useState<{ name: string, phone: string }>({ name: '', phone: '' });
   const [columns, setColumns] = useState<Column[]>([
     { id: 'name', label: '이름', editable: false, required: true },
     { id: 'phone', label: '휴대폰 번호', editable: false, required: true },
@@ -45,14 +45,14 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
         phone: newEntry.phone,
         timestamp: new Date().toISOString(),
       };
-      
+
       // Initialize any custom columns with empty values
       columns.forEach(col => {
         if (!['name', 'phone'].includes(col.id)) {
           entryData[col.id] = '';
         }
       });
-      
+
       setQueueEntries([...queueEntries, entryData]);
       setNewEntry({ name: '', phone: '' });
     }
@@ -65,15 +65,15 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
   const handleAddColumn = () => {
     if (newColumnName.trim()) {
       const columnId = newColumnName.toLowerCase().replace(/\s+/g, '_');
-      setColumns([...columns, { 
-        id: columnId, 
+      setColumns([...columns, {
+        id: columnId,
         label: newColumnName,
         editable: true,
         required: false
       }]);
       setNewColumnName('');
       setShowColumnAdder(false);
-      
+
       // Add empty value for new column to all existing entries
       setQueueEntries(queueEntries.map(entry => ({
         ...entry,
@@ -84,19 +84,19 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
 
   const handleRemoveColumn = (columnId: string) => {
     if (['name', 'phone'].includes(columnId)) return; // Don't remove required columns
-    
+
     setColumns(columns.filter(col => col.id !== columnId));
-    
+
     // Remove this column from all entries
     setQueueEntries(queueEntries.map(entry => {
-      const newEntry = {...entry};
+      const newEntry = { ...entry };
       delete newEntry[columnId];
       return newEntry;
     }));
   };
 
   const handleUpdateEntry = (id: number, field: string, value: string) => {
-    setQueueEntries(queueEntries.map(entry => 
+    setQueueEntries(queueEntries.map(entry =>
       entry.id === id ? { ...entry, [field]: value } : entry
     ));
   };
@@ -114,12 +114,12 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2 dark:text-white">{selectedLine.name}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          {queueEntries.length === 0 
-            ? '아직 대기자가 없습니다.' 
+          {queueEntries.length === 0
+            ? '아직 대기자가 없습니다.'
             : `현재 ${queueEntries.length}명이 대기 중입니다.`}
         </p>
       </div>
-      
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <div className="flex p-4">
@@ -137,15 +137,15 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
               </div>
             ))}
             <div className="w-12"></div>
-            
-            <button 
+
+            <button
               onClick={() => setShowColumnAdder(true)}
               className="ml-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <Plus size={20} className="text-blue-500" />
             </button>
           </div>
-          
+
           {showColumnAdder && (
             <div className="flex p-4 bg-gray-50 dark:bg-gray-700">
               <input
@@ -156,13 +156,13 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white"
                 autoFocus
               />
-              <button 
+              <button
                 onClick={handleAddColumn}
                 className="ml-2 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
               >
                 추가
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowColumnAdder(false);
                   setNewColumnName('');
@@ -174,7 +174,7 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
             </div>
           )}
         </div>
-        
+
         {queueEntries.length > 0 ? (
           <div>
             {queueEntries.map((entry) => (
@@ -205,7 +205,7 @@ const QueueManager: React.FC<QueueManagerProps> = ({ selectedLine }) => {
             ))}
           </div>
         ) : null}
-        
+
         <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-700">
           <div className="flex-1 flex space-x-4">
             <div className="flex-1 flex items-center">
