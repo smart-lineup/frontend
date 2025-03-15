@@ -30,7 +30,7 @@ body {
 }
 
 /* 다크모드 전환 애니메이션 */
-* {
+html {
   transition-property: color, background-color, border-color;
   transition-duration: 200ms;
 }

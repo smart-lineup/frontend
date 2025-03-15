@@ -5,6 +5,7 @@ import LineSidebar from '../components/LineSidebar';
 import QueueManager from '../components/QueueManager';
 import { Sun, Moon } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { useDarkMode } from '../components/DarkModeContext';
 
 // 인터페이스 정의
 interface Queue {
@@ -84,48 +85,9 @@ const api = {
 };
 
 const LinePage: React.FC = () => {
-    const [darkMode, setDarkMode] = useState(false);
     const [lines, setLines] = useState<Line[]>([]);
     const [selectedLine, setSelectedLine] = useState<Line | null>(null);
-
-    // 다크 모드 감지 및 적용
-    useEffect(() => {
-        const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        if (isDarkMode) {
-            document.documentElement.classList.add('dark');
-            setDarkMode(true);
-        } else {
-            document.documentElement.classList.remove('dark');
-            setDarkMode(false);
-        }
-    }, []);
-
-    // 시스템 다크모드 변경 감지 (추가)
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        const handleChange = (e: any) => {
-            const newDarkMode = e.matches;
-            if (newDarkMode) {
-                document.documentElement.classList.add('dark');
-                setDarkMode(true);
-            } else {
-                document.documentElement.classList.remove('dark');
-                setDarkMode(false);
-            }
-        };
-
-        // 이벤트 리스너 등록 방식은 브라우저 호환성을 위해 조건부로 처리
-        if (mediaQuery.addEventListener) {
-            mediaQuery.addEventListener('change', handleChange);
-            return () => mediaQuery.removeEventListener('change', handleChange);
-        } else {
-            // 구형 브라우저 지원
-            mediaQuery.addListener(handleChange);
-            return () => mediaQuery.removeListener(handleChange);
-        }
-    }, []);
+    const { darkMode, toggleDarkMode } = useDarkMode();
 
     // 초기 라인 데이터 로드
     useEffect(() => {
@@ -136,17 +98,6 @@ const LinePage: React.FC = () => {
 
         loadLines();
     }, []);
-
-    const toggleDarkMode = () => {
-        const newDarkMode = !darkMode;
-        setDarkMode(newDarkMode);
-
-        if (newDarkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    };
 
     // 라인 추가
     const handleAddLine = async (name: string) => {
@@ -169,7 +120,7 @@ const LinePage: React.FC = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+        <div className={`flex h-screen bg-gray-100 ${darkMode ? 'dark:bg-gray-900' : ''} transition-colors duration-200`}>
             <LineSidebar
                 lines={lines}
                 onAddLine={handleAddLine}
@@ -179,7 +130,7 @@ const LinePage: React.FC = () => {
             />
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Navbar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+                <Navbar />
 
                 <main className="flex-1 overflow-hidden">
                     <QueueManager selectedLine={selectedLine} />
