@@ -23,5 +23,4 @@ export enum QueueStatus {
 export interface Line {
     id: number;
     name: string;
-    queues: Queue[];
 }
