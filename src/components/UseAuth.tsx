@@ -8,9 +8,15 @@ export const useAuth = () => {
 
     const fetchUser = async () => {
         try {
-            const response = await axios.get(config.backend + "/user/check", {
+            const response = await axios.get(config.backend + "/auth/check", {
                 withCredentials: true
             });
+            if (!response.data || response.data == "login yet") {
+                setUsername(null);
+                setIsAuthenticated(false);
+                return;
+            };
+            console.log(response.data);
             setUsername(response.data);
             setIsAuthenticated(true);
         } catch (error) {
