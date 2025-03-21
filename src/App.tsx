@@ -9,6 +9,7 @@ import ChangePasswordPage from './pages/login/ChangePasswordPage';
 import HomePage from './pages/HomePage';
 import LinePage from './pages/LinePage';
 import { DarkModeProvider } from './components/DarkModeContext';
+import AttendeeInputPage from './pages/AttendeeInputPage';
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     <Route path='/login' element={<LoginPage />} />
                     <Route path='/signup' element={<Signup />} />
                     <Route path='/verify-email' element={<VerifyEmailPage />} />
+                    <Route path='/attendee/:uuid' element={<AttendeeInputPage />} />
                     <Route path='/find/id' element={<FindIdPage />} />
                     <Route path='/find/password' element={<FindPasswordPage />} />
                     <Route path='/find/password/reset' element={<ChangePasswordPage />} />

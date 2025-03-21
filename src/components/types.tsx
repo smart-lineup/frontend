@@ -1,5 +1,5 @@
 export interface Attendee {
-    id: number;
+    name: string;
     phone: string;
     info: string;
     createdAt: string;
@@ -9,10 +9,8 @@ export interface Queue {
     id: number;
     attendee: Attendee;
     status: QueueStatus;
-    previous: Queue | null;
-    next: Queue | null;
+    orderNo: number;
     createdAt: string;
-    updatedAt: string;
 }
 
 export enum QueueStatus {
@@ -23,4 +21,5 @@ export enum QueueStatus {
 export interface Line {
     id: number;
     name: string;
+    uuid: string;
 }
