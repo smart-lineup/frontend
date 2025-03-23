@@ -9,7 +9,8 @@ export interface Queue {
     id: number;
     attendee: Attendee;
     status: QueueStatus;
-    orderNo: number;
+    previousId: number;
+    nextId: number;
     createdAt: string;
 }
 
