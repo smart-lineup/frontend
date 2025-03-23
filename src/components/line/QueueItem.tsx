@@ -111,7 +111,7 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
             }`}
           >
             {isWaiting ? <Check size={14} /> : <Clock size={14} />}
-            {isWaiting ? "입장" : "대기"}
+            {isWaiting ? "입장" : "완료"}
           </button>
 
           <button

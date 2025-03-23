@@ -167,7 +167,7 @@ const LineView: React.FC<LineViewProps> = ({
                                             onClick={() => onStatusChange(queue.id, QueueStatus.WAITING)}
                                             className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 text-sm"
                                         >
-                                            대기
+                                            완료
                                         </button>
                                     )}
                                     <button
