@@ -32,9 +32,11 @@ const QueueList: React.FC<QueueListProps> = ({
                     {queues.map((queue) => (
                         <QueueItem
                             key={queue.id}
+                            id={`queue-${queue.id}`}
                             queue={queue}
                             onStatusChange={onStatusChange}
                             onRemove={onRemoveQueue}
+                            isDraggable={false}
                         />
                     ))}
                 </div>

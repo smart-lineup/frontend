@@ -1,10 +1,12 @@
+"use client"
+
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { QRCodeSVG } from "qrcode.react"
-import { Users, Plus, Share2, QrCode, Clipboard, ArrowLeft, MoveVertical } from "lucide-react"
+import { Users, Plus, Share2, QrCode, Clipboard, ArrowLeft, MoveVertical, AlertCircle } from "lucide-react"
 import { useDarkMode } from "../components/DarkModeContext"
-import type { Line, Queue, QueueStatus } from "../components/types"
+import type { Line, Queue, QueueStatus, Attendee } from "../components/types"
 import config from "../config"
 import {
   DndContext,
@@ -16,6 +18,7 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core"
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { read, utils } from "xlsx"
 
 // Components
 import Navbar from "../components/Navbar"
@@ -36,10 +39,17 @@ const LinePage: React.FC = () => {
   const [showAddLine, setShowAddLine] = useState(false)
   const [editingLine, setEditingLine] = useState<{ id: number; name: string } | null>(null)
   const [isDraggable, setIsDraggable] = useState(false)
+  const [showExcelUpload, setShowExcelUpload] = useState(false)
+  const [excelData, setExcelData] = useState<any[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [editingAttendee, setEditingAttendee] = useState<{ queueId: number; attendee: Attendee } | null>(null)
 
   // Form states
   const [phone, setPhone] = useState("")
   const [name, setName] = useState("손님")
+  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({})
+  const [infoFields, setInfoFields] = useState<{ key: string; value: string }[]>([{ key: "메모", value: "" }])
 
   // Set up sensors for drag and drop
   const sensors = useSensors(
@@ -167,21 +177,36 @@ const LinePage: React.FC = () => {
     setShowAddAttendee(false)
     setShowQRCode(false)
     setIsDraggable(false)
+    setEditingAttendee(null)
 
     // Create share URL
     const shareUrl = `${window.location.origin}/attendee/${line.uuid}`
     setShareUrl(shareUrl)
   }
 
+  const prepareInfoObject = () => {
+    // Filter out empty fields and create an object
+    const infoObj: Record<string, string> = {}
+    infoFields.forEach((field) => {
+      if (field.key.trim() && field.value.trim()) {
+        infoObj[field.key.trim()] = field.value.trim()
+      }
+    })
+    return infoObj
+  }
+
   const handleAddAttendee = async () => {
     if (!phone.trim() || !selectedLine) return
 
     try {
+      const infoObj = prepareInfoObject()
+
       await axios.post(
         `${config.backend}/line/${selectedLine.id}/queue/add`,
         {
           phone: phone,
           name: name,
+          info: JSON.stringify(infoObj),
         },
         {
           withCredentials: true,
@@ -190,11 +215,149 @@ const LinePage: React.FC = () => {
 
       fetchLineQueues(selectedLine.id)
       setShowAddAttendee(false)
-      setPhone("")
-      setName("손님")
+      resetAttendeeForm()
     } catch (e) {
       console.error("Error adding attendee:", e)
       setError("대기자 추가에 실패했습니다.")
+    }
+  }
+
+  const handleUpdateAttendee = async () => {
+    if (!editingAttendee || !selectedLine) return
+
+    try {
+      const infoObj = prepareInfoObject()
+
+      await axios.put(
+        `${config.backend}/queue/${editingAttendee.queueId}/attendee`,
+        {
+          phone: phone,
+          name: name,
+          info: JSON.stringify(infoObj),
+        },
+        {
+          withCredentials: true,
+        },
+      )
+
+      fetchLineQueues(selectedLine.id)
+      setEditingAttendee(null)
+      resetAttendeeForm()
+    } catch (e) {
+      console.error("Error updating attendee:", e)
+      setError("대기자 정보 수정에 실패했습니다.")
+    }
+  }
+
+  const resetAttendeeForm = () => {
+    setPhone("")
+    setName("손님")
+    setInfoFields([{ key: "메모", value: "" }])
+  }
+
+  const startEditAttendee = (queue: Queue) => {
+    setEditingAttendee({
+      queueId: queue.id,
+      attendee: queue.attendee,
+    })
+    setPhone(queue.attendee.phone)
+    setName(queue.attendee.name)
+
+    // Parse the info JSON
+    try {
+      const infoObj = JSON.parse(queue.attendee.info)
+      if (typeof infoObj === "object" && infoObj !== null) {
+        const fields = Object.entries(infoObj).map(([key, value]) => ({
+          key,
+          value: String(value),
+        }))
+
+        setInfoFields(fields.length > 0 ? fields : [{ key: "메모", value: "" }])
+      } else {
+        setInfoFields([{ key: "메모", value: queue.attendee.info }])
+      }
+    } catch (e) {
+      // If parsing fails, set a default field
+      setInfoFields([{ key: "메모", value: queue.attendee.info || "" }])
+    }
+  }
+
+  const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    const reader = new FileReader()
+
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target?.result as ArrayBuffer)
+        const workbook = read(data, { type: "array" })
+
+        // Assume first sheet
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+        const jsonData = utils.sheet_to_json(firstSheet)
+
+        // Validate data format
+        const validData = jsonData.map((row: any) => {
+          // Extract any additional columns as info
+          const { name, Name, phone, Phone, 이름: korName, 전화번호: korPhone, ...rest } = row
+          const infoObj: Record<string, any> = {}
+
+          // Add all other columns to info
+          Object.entries(rest).forEach(([key, value]) => {
+            if (value) infoObj[key] = value
+          })
+
+          return {
+            name: name || Name || korName || "손님",
+            phone: phone || Phone || korPhone || "",
+            info: JSON.stringify(Object.keys(infoObj).length > 0 ? infoObj : {}),
+          }
+        })
+
+        setExcelData(validData)
+        setShowExcelUpload(true)
+        setIsUploading(false)
+      } catch (error) {
+        console.error("Error parsing Excel file:", error)
+        setError("엑셀 파일 파싱에 실패했습니다.")
+        setIsUploading(false)
+      }
+    }
+
+    reader.onerror = () => {
+      setError("파일 읽기에 실패했습니다.")
+      setIsUploading(false)
+    }
+
+    reader.readAsArrayBuffer(file)
+  }
+
+  const handleConfirmExcelUpload = async () => {
+    if (!selectedLine || excelData.length === 0) return
+
+    setIsUploading(true)
+    try {
+      // Batch upload attendees
+      await axios.post(
+        `${config.backend}/line/${selectedLine.id}/queue/batch-add`,
+        {
+          attendees: excelData,
+        },
+        {
+          withCredentials: true,
+        },
+      )
+
+      fetchLineQueues(selectedLine.id)
+      setShowExcelUpload(false)
+      setExcelData([])
+      setIsUploading(false)
+    } catch (e) {
+      console.error("Error batch adding attendees:", e)
+      setError("대기자 일괄 추가에 실패했습니다.")
+      setIsUploading(false)
     }
   }
 
@@ -266,14 +429,18 @@ const LinePage: React.FC = () => {
       return
     }
 
-    // Find the dragged item and the drop target
+    // Extract the queue IDs from the element IDs
     const activeId = active.id.toString().replace("queue-", "")
     const overId = over.id.toString().replace("queue-", "")
 
+    // Find the indices of the dragged item and the drop target
     const activeIndex = queues.findIndex((q) => q.id.toString() === activeId)
     const overIndex = queues.findIndex((q) => q.id.toString() === overId)
 
     if (activeIndex !== -1 && overIndex !== -1) {
+      // Determine direction
+      const direction = activeIndex > overIndex ? "up" : "down"
+
       // Update the UI immediately for better UX
       const newQueues = arrayMove(queues, activeIndex, overIndex)
       setQueues(newQueues)
@@ -281,13 +448,15 @@ const LinePage: React.FC = () => {
       // Update the backend
       if (selectedLine) {
         try {
-          // Send the queue ID being moved and the ID of the queue that was in the target position
+          // Send the reorder request with direction information
           await axios.put(
             `${config.backend}/queue/reorder`,
             {
               lineId: selectedLine.id,
+              // queue_ids: newQueues.map((q) => q.id),
               movedQueueId: Number.parseInt(activeId),
               targetQueueId: Number.parseInt(overId),
+              direction: direction,
             },
             {
               withCredentials: true,
@@ -301,6 +470,20 @@ const LinePage: React.FC = () => {
         }
       }
     }
+  }
+
+  const handleAddInfoField = () => {
+    setInfoFields([...infoFields, { key: "", value: "" }])
+  }
+
+  const handleRemoveInfoField = (index: number) => {
+    setInfoFields(infoFields.filter((_, i) => i !== index))
+  }
+
+  const handleInfoFieldChange = (index: number, field: "key" | "value", value: string) => {
+    const newFields = [...infoFields]
+    newFields[index][field] = value
+    setInfoFields(newFields)
   }
 
   return (
@@ -542,10 +725,85 @@ const LinePage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Add Attendee Form */}
-                  {showAddAttendee ? (
+                  {showExcelUpload && (
+                    <div className="mb-6 p-6 bg-white dark:bg-gray-700 rounded-xl shadow-md animate-fadeIn">
+                      <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">엑셀 데이터 미리보기</h2>
+
+                      {excelData.length > 0 ? (
+                        <>
+                          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center">
+                            <AlertCircle size={18} className="text-blue-500 mr-2" />
+                            <span className="text-sm text-blue-700 dark:text-blue-300">
+                              총 {excelData.length}명의 대기자를 추가합니다.
+                            </span>
+                          </div>
+
+                          <div className="max-h-60 overflow-y-auto mb-4 border dark:border-gray-600 rounded-lg">
+                            <table className="w-full text-sm">
+                              <thead className="bg-gray-100 dark:bg-gray-800">
+                                <tr>
+                                  <th className="px-4 py-2 text-left">이름</th>
+                                  <th className="px-4 py-2 text-left">전화번호</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {excelData.slice(0, 10).map((item, index) => (
+                                  <tr key={index} className="border-t dark:border-gray-700">
+                                    <td className="px-4 py-2">{item.name}</td>
+                                    <td className="px-4 py-2">{item.phone}</td>
+                                  </tr>
+                                ))}
+                                {excelData.length > 10 && (
+                                  <tr className="border-t dark:border-gray-700">
+                                    <td colSpan={2} className="px-4 py-2 text-center text-gray-500">
+                                      외 {excelData.length - 10}명...
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setShowExcelUpload(false)
+                                setExcelData([])
+                              }}
+                              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+                            >
+                              취소
+                            </button>
+                            <button
+                              onClick={handleConfirmExcelUpload}
+                              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center gap-2"
+                              disabled={isUploading}
+                            >
+                              {isUploading ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  처리 중...
+                                </>
+                              ) : (
+                                "업로드 확인"
+                              )}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+                          <p>데이터를 불러오는 중입니다...</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Add/Edit Attendee Form */}
+                  {showAddAttendee || editingAttendee ? (
                     <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                      <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">대기열에 추가하기</h2>
+                      <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                        {editingAttendee ? "대기자 정보 수정" : "대기열에 추가하기"}
+                      </h2>
                       <div className="space-y-4">
                         <div>
                           <label
@@ -580,32 +838,113 @@ const LinePage: React.FC = () => {
                             required
                           />
                         </div>
+
+                        {/* Additional Info Fields */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">추가 정보</label>
+                            <button
+                              type="button"
+                              onClick={handleAddInfoField}
+                              className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            >
+                              + 필드 추가
+                            </button>
+                          </div>
+
+                          <div className="space-y-2 max-w-full">
+                            {infoFields.map((field, index) => (
+                              <div key={index} className="flex gap-2 items-start w-full">
+                                <input
+                                  type="text"
+                                  value={field.key}
+                                  onChange={(e) => handleInfoFieldChange(index, "key", e.target.value)}
+                                  placeholder="필드명"
+                                  className="w-1/3 p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:border-gray-600 text-sm"
+                                />
+                                <input
+                                  type="text"
+                                  value={field.value}
+                                  onChange={(e) => handleInfoFieldChange(index, "value", e.target.value)}
+                                  placeholder="값"
+                                  className="w-2/3 p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:border-gray-600 text-sm"
+                                />
+                                {infoFields.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveInfoField(index)}
+                                    className="p-2 text-red-500 hover:text-red-700 flex-shrink-0"
+                                    aria-label="필드 삭제"
+                                  >
+                                    &times;
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
                         <div className="flex justify-end gap-2">
                           <button
-                            onClick={() => setShowAddAttendee(false)}
+                            onClick={() => {
+                              setShowAddAttendee(false)
+                              setEditingAttendee(null)
+                              resetAttendeeForm()
+                            }}
                             className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
                           >
                             취소
                           </button>
                           <button
-                            onClick={handleAddAttendee}
+                            onClick={editingAttendee ? handleUpdateAttendee : handleAddAttendee}
                             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                             disabled={!phone.trim()}
                           >
-                            추가
+                            {editingAttendee ? "수정" : "추가"}
                           </button>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="mb-6">
+                    <div className="mb-6 flex gap-2">
                       <button
                         onClick={() => setShowAddAttendee(true)}
-                        className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
                       >
                         <Plus size={18} />
                         대기자 추가
                       </button>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <path d="M8 13h2" />
+                          <path d="M8 17h2" />
+                          <path d="M14 13h2" />
+                          <path d="M14 17h2" />
+                        </svg>
+                        엑셀 업로드
+                      </button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleExcelUpload}
+                        accept=".xlsx,.xls"
+                        className="hidden"
+                      />
                     </div>
                   )}
 
@@ -641,6 +980,7 @@ const LinePage: React.FC = () => {
                                 queue={queue}
                                 onStatusChange={handleStatusChange}
                                 onRemove={removeQueue}
+                                onEdit={() => startEditAttendee(queue)}
                                 isDraggable={isDraggable}
                               />
                             ))}
