@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './UseAuth';
+import { useAuth } from './AuthContext';
 import { Sun, Moon, Settings, LogIn, Menu, X } from 'lucide-react';
 import { useDarkMode } from './DarkModeContext';
 

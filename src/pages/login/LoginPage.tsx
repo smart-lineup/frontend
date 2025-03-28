@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import config from '../../config';
 import Modal from '../../components/Modal';
+import { useAuth } from '../../components/AuthContext';
 
 interface LoginInput {
     email: string;
@@ -34,12 +35,13 @@ const LoginPage: React.FC = () => {
     }
 
     const login: SubmitHandler<LoginInput> = async (data) => {
+        const { fetchUser } = useAuth();
         try {
             const response = await axios.post(`${config.backend}/auth/login`, {
                 email: data.email,
                 password: data.password
             });
-
+            await fetchUser();
             navigate('/');
         } catch (e) {
             if (axios.isAxiosError(e)) {

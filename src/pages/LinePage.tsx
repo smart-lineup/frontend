@@ -4,9 +4,21 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 import { QRCodeSVG } from "qrcode.react"
-import { Users, Plus, Share2, QrCode, Clipboard, ArrowLeft, MoveVertical, AlertCircle } from "lucide-react"
+import {
+  Users,
+  Plus,
+  Share2,
+  QrCode,
+  Clipboard,
+  ArrowLeft,
+  MoveVertical,
+  AlertCircle,
+  FileDown,
+  FileUp,
+  HelpCircle,
+} from "lucide-react"
 import { useDarkMode } from "../components/DarkModeContext"
-import type { Line, Queue, QueueStatus, Attendee } from "../components/types"
+import { type Line, type Queue, QueueStatus, type Attendee } from "../components/types"
 import config from "../config"
 import {
   DndContext,
@@ -18,12 +30,15 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core"
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { read, utils } from "xlsx"
+import { read, utils, writeFileXLSX } from "xlsx"
+import { useNavigate } from "react-router-dom"
+import * as Tooltip from "@radix-ui/react-Tooltip"
 
 // Components
 import Navbar from "../components/Navbar"
 import QueueItem from "../components/line/QueueItem"
 import EmptyState from "../components/line/EmptyState"
+import { useAuth } from "../components/AuthContext"
 
 const LinePage: React.FC = () => {
   const { darkMode } = useDarkMode()
@@ -44,13 +59,24 @@ const LinePage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [editingAttendee, setEditingAttendee] = useState<{ queueId: number; attendee: Attendee } | null>(null)
+  // const [showUploadTooltip, setShowUploadTooltip] = useState(false) // 제거
 
   // Form states
   const [phone, setPhone] = useState("")
   const [name, setName] = useState("손님")
-  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({})
   const [infoFields, setInfoFields] = useState<{ key: string; value: string }[]>([{ key: "메모", value: "" }])
 
+  const { username, isAuthenticated, authLoading } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    console.log(username)
+    console.log(isAuthenticated)
+    if (!authLoading && !isAuthenticated) {
+      alert("로그인이 필요합니다.")
+      navigate("/")
+    }
+  }, [authLoading, isAuthenticated])
   // Set up sensors for drag and drop
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -341,8 +367,9 @@ const LinePage: React.FC = () => {
     try {
       // Batch upload attendees
       await axios.post(
-        `${config.backend}/line/${selectedLine.id}/queue/batch-add`,
+        `${config.backend}/queue/batch-add`,
         {
+          lineId: selectedLine.id,
           attendees: excelData,
         },
         {
@@ -358,6 +385,53 @@ const LinePage: React.FC = () => {
       console.error("Error batch adding attendees:", e)
       setError("대기자 일괄 추가에 실패했습니다.")
       setIsUploading(false)
+    }
+  }
+
+  const handleExcelDownload = () => {
+    if (!queues.length || !selectedLine) {
+      alert("다운로드할 대기열 데이터가 없습니다.")
+      return
+    }
+
+    try {
+      // 대기열 데이터를 엑셀 형식으로 변환
+      const data = queues.map((queue) => {
+        // 추가 정보 파싱
+        let additionalInfo = {}
+        try {
+          additionalInfo = JSON.parse(queue.attendee.info)
+        } catch (e) {
+          // 파싱 실패 시 빈 객체 유지
+        }
+
+        // 기본 필드
+        const baseData = {
+          이름: queue.attendee.name,
+          전화번호: queue.attendee.phone,
+          상태: queue.status === QueueStatus.WAITING ? "대기중" : "입장",
+          등록시간: new Date(queue.createdAt).toLocaleString(),
+        }
+
+        // 추가 정보가 있으면 병합
+        return { ...baseData, ...additionalInfo }
+      })
+
+      // 워크시트 생성
+      const ws = utils.json_to_sheet(data)
+
+      // 워크북 생성
+      const wb = utils.book_new()
+      utils.book_append_sheet(wb, ws, "대기열")
+
+      // 파일 이름 생성 (라인 이름 + 날짜)
+      const fileName = `${selectedLine.name}_대기열_${new Date().toISOString().split("T")[0]}.xlsx`
+
+      // 파일 다운로드
+      writeFileXLSX(wb, fileName)
+    } catch (e) {
+      console.error("Excel download error:", e)
+      setError("엑셀 다운로드에 실패했습니다.")
     }
   }
 
@@ -452,8 +526,8 @@ const LinePage: React.FC = () => {
           await axios.put(
             `${config.backend}/queue/reorder`,
             {
-              lineId: selectedLine.id,
-              // queue_ids: newQueues.map((q) => q.id),
+              line_id: selectedLine.id,
+              queue_ids: newQueues.map((q) => q.id),
               movedQueueId: Number.parseInt(activeId),
               targetQueueId: Number.parseInt(overId),
               direction: direction,
@@ -485,6 +559,8 @@ const LinePage: React.FC = () => {
     newFields[index][field] = value
     setInfoFields(newFields)
   }
+
+  // const toggleUploadTooltip = () => { setShowUploadTooltip(!showUploadTooltip) } // 제거
 
   return (
     <div className={darkMode ? "dark" : ""}>
@@ -584,15 +660,14 @@ const LinePage: React.FC = () => {
                           </div>
                         ) : (
                           <div
-                            className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                              selectedLine?.id === line.id
-                                ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
-                                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
-                            }`}
+                            className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${selectedLine?.id === line.id
+                              ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
+                              : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200"
+                              }`}
                             onClick={() => handleSelectLine(line)}
                           >
-                            <span className="font-medium truncate">{line.name}</span>
-                            <div className="flex gap-1">
+                            <span className="font-medium truncate max-w-[60%]">{line.name}</span>
+                            <div className="flex gap-1 flex-shrink-0">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -652,46 +727,59 @@ const LinePage: React.FC = () => {
             {/* Main Content */}
             <div className="flex-1">
               {selectedLine ? (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 overflow-hidden">
+
+                  <div className="flex flex-col mb-6 gap-3 md:gap-4">
+                    <div className="flex items-center w-full">
                       <button
                         onClick={() => {
                           setSelectedLine(null)
                           setQueues([])
                         }}
-                        className="mr-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                        className="mr-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex-shrink-0"
                       >
                         <ArrowLeft size={18} />
                       </button>
-                      <h1 className="text-xl font-bold text-gray-900 dark:text-white">{selectedLine.name}</h1>
+                      <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate max-w-[calc(100%-60px)]">
+                        {selectedLine.name}
+                      </h1>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2 w-full justify-start md:justify-end">
                       <button
                         onClick={toggleDraggable}
-                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
-                          isDraggable
-                            ? "bg-purple-500 hover:bg-purple-600 text-white"
-                            : "bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
-                        }`}
+                        className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isDraggable
+                          ? "bg-purple-500 hover:bg-purple-600 text-white"
+                          : "bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
+                          }`}
                       >
                         <MoveVertical size={16} />
-                        <span className="hidden sm:inline">{isDraggable ? "순서 저장" : "순서 변경"}</span>
+                        <span className="whitespace-nowrap text-xs">
+                          {isDraggable ? "순서 저장" : "순서 변경"}
+                        </span>
                       </button>
                       <button
                         onClick={handleShare}
                         className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                       >
                         <Share2 size={16} />
-                        <span className="hidden sm:inline">공유</span>
+                        <span className="whitespace-nowrap text-xs">공유</span>
                       </button>
                       <button
                         onClick={toggleQRCode}
                         className="flex items-center gap-1 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
                       >
                         <QrCode size={16} />
-                        <span className="hidden sm:inline">QR</span>
+                        <span className="whitespace-nowrap text-xs">QR</span>
+                      </button>
+                      <button
+                        onClick={handleExcelDownload}
+                        className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
+                      >
+                        <FileDown size={16} />
+                        <span className="whitespace-nowrap text-xs">
+                          엑셀 다운로드
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -704,14 +792,14 @@ const LinePage: React.FC = () => {
                           type="text"
                           value={shareUrl}
                           readOnly
-                          className="flex-1 p-2 border rounded-md text-sm bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 dark:border-gray-600"
+                          className="flex-1 p-2 border rounded-md text-sm bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 dark:border-gray-600 overflow-hidden text-ellipsis"
                         />
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(shareUrl)
                             alert("URL이 클립보드에 복사되었습니다.")
                           }}
-                          className="p-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500"
+                          className="p-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 flex-shrink-0"
                         >
                           <Clipboard size={16} />
                         </button>
@@ -749,8 +837,8 @@ const LinePage: React.FC = () => {
                               <tbody>
                                 {excelData.slice(0, 10).map((item, index) => (
                                   <tr key={index} className="border-t dark:border-gray-700">
-                                    <td className="px-4 py-2">{item.name}</td>
-                                    <td className="px-4 py-2">{item.phone}</td>
+                                    <td className="px-4 py-2 truncate max-w-[150px]">{item.name}</td>
+                                    <td className="px-4 py-2 truncate max-w-[150px]">{item.phone}</td>
                                   </tr>
                                 ))}
                                 {excelData.length > 10 && (
@@ -906,7 +994,7 @@ const LinePage: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="mb-6 flex gap-2">
+                    <div className="mb-6 flex flex-wrap gap-2">
                       <button
                         onClick={() => setShowAddAttendee(true)}
                         className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -914,37 +1002,48 @@ const LinePage: React.FC = () => {
                         <Plus size={18} />
                         대기자 추가
                       </button>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                          <polyline points="14 2 14 8 20 8" />
-                          <path d="M8 13h2" />
-                          <path d="M8 17h2" />
-                          <path d="M14 13h2" />
-                          <path d="M14 17h2" />
-                        </svg>
-                        엑셀 업로드
-                      </button>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleExcelUpload}
-                        accept=".xlsx,.xls"
-                        className="hidden"
-                      />
+                      <div className="flex-1 relative sm:block hidden">
+                        <Tooltip.Provider delayDuration={300}>
+                          <Tooltip.Root>
+                            <Tooltip.Trigger asChild>
+                              <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 relative"
+                              >
+                                <FileUp size={18} />
+                                <span>엑셀 업로드</span>
+                                <HelpCircle size={16} className="ml-1 text-white/80" />
+                              </button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Portal>
+                              <Tooltip.Content
+                                className="z-50 max-w-xs p-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg"
+                                sideOffset={5}
+                                side="top"
+                                align="center"
+                                alignOffset={0}
+                                avoidCollisions
+                              >
+                                <div className="font-semibold mb-1">엑셀 파일 형식 안내:</div>
+                                <ul className="list-disc pl-4 space-y-1">
+                                  <li>첫 번째 행은 열 제목이어야 합니다.</li>
+                                  <li>첫번째 열:&nbsp;'이름', &nbsp;두번째 열:&nbsp;'전화번호'</li>
+                                  <li>그 외 열은 추가 정보로 자동 저장됩니다.</li>
+                                  <li>파일 확장자는 csv, xlsx 만 가능합니다.</li>
+                                </ul>
+                                <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
+                              </Tooltip.Content>
+                            </Tooltip.Portal>
+                          </Tooltip.Root>
+                        </Tooltip.Provider>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleExcelUpload}
+                          accept=".xlsx,.csv"
+                          className="hidden"
+                        />
+                      </div>
                     </div>
                   )}
 
@@ -967,12 +1066,12 @@ const LinePage: React.FC = () => {
                         <p>위의 '대기자 추가' 버튼을 눌러 대기자를 추가해보세요.</p>
                       </div>
                     ) : (
+
                       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext
                           items={queues.map((q) => `queue-${q.id}`)}
                           strategy={verticalListSortingStrategy}
-                        >
-                          <div className="space-y-3">
+                        >           <div className="space-y-3">
                             {queues.map((queue) => (
                               <QueueItem
                                 key={queue.id}

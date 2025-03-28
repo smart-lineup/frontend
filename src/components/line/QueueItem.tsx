@@ -90,11 +90,10 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
     <div
       ref={setNodeRef}
       style={style}
-      className={`p-4 border rounded-xl transition-all duration-200 ${isDragging ? "shadow-lg opacity-75" : ""} ${
-        isWaiting
+      className={`p-4 border rounded-xl transition-all duration-200 ${isDragging ? "shadow-lg opacity-75" : ""} ${isWaiting
           ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-900/20"
           : "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-900/20"
-      }`}
+        }`}
     >
       {/* Main content area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -110,26 +109,25 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
             </div>
           )}
           <div
-            className={`flex-shrink-0 rounded-full p-2 ${
-              isWaiting
+            className={`flex-shrink-0 rounded-full p-2 ${isWaiting
                 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
                 : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-            }`}
+              }`}
           >
             <User size={18} />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 overflow-hidden">
             <div className="font-medium text-gray-900 dark:text-white truncate">
               {getAttendeeInfo(queue.attendee.name)}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400 sm:truncate md:overflow-visible">
+            <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
               {formatPhoneNumber(queue.attendee.phone)}
             </div>
           </div>
         </div>
 
         {/* Right side - Actions */}
-        <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0 justify-end">
+        <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0 justify-end flex-shrink-0">
           <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
             <Clock3 size={14} className="flex-shrink-0" />
             <span>{getWaitTime(queue.createdAt)} 대기</span>
@@ -138,11 +136,10 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
           <div className="flex gap-2">
             <button
               onClick={() => onStatusChange(queue.id, isWaiting ? QueueStatus.ENTERED : QueueStatus.WAITING)}
-              className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-1 whitespace-nowrap min-w-[70px] justify-center ${
-                isWaiting
+              className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-1 whitespace-nowrap min-w-[70px] justify-center ${isWaiting
                   ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50"
                   : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:hover:bg-yellow-900/50"
-              }`}
+                }`}
             >
               {isWaiting ? (
                 <Check size={14} className="flex-shrink-0" />
@@ -178,13 +175,13 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
       {/* Footer area */}
       <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
         <div className="flex flex-wrap justify-between items-center cursor-pointer" onClick={toggleExpand}>
-          <div className="flex flex-wrap gap-2 md:gap-4">
-            <div className="flex items-center gap-1 whitespace-nowrap">
+          <div className="flex flex-wrap gap-2 md:gap-4 overflow-hidden">
+            <div className="flex items-center gap-1 whitespace-nowrap truncate">
               <Clock size={12} className="flex-shrink-0" />
               {formatDate(queue.createdAt)} 등록
             </div>
-            {queue.previousId && <div className="whitespace-nowrap">이전: #{queue.previousId}</div>}
-            {queue.nextId && <div className="whitespace-nowrap">다음: #{queue.nextId}</div>}
+            {queue.previousId && <div className="whitespace-nowrap truncate">이전: #{queue.previousId}</div>}
+            {queue.nextId && <div className="whitespace-nowrap truncate">다음: #{queue.nextId}</div>}
           </div>
           <div className="flex items-center mt-1 md:mt-0">
             <span className="mr-1">상세 정보</span>
@@ -199,7 +196,9 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
               {Object.entries(parseAttendeeInfo(queue.attendee.info)).map(([key, value]) => (
                 <div key={key} className="flex flex-wrap">
                   <span className="w-24 font-medium text-gray-600 dark:text-gray-400">{formatInfoKey(key)}:</span>
-                  <span className="text-gray-800 dark:text-gray-200 break-words">{String(value)}</span>
+                  <span className="text-gray-800 dark:text-gray-200 break-words overflow-hidden text-ellipsis">
+                    {String(value)}
+                  </span>
                 </div>
               ))}
             </div>
