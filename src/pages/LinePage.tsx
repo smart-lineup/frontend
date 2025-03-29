@@ -64,6 +64,7 @@ const LinePage: React.FC = () => {
   // Form states
   const [phone, setPhone] = useState("")
   const [name, setName] = useState("손님")
+  const [phoneError, setPhoneError] = useState<string | null>(null)
   const [infoFields, setInfoFields] = useState<{ key: string; value: string }[]>([{ key: "메모", value: "" }])
 
   const { username, isAuthenticated, authLoading } = useAuth()
@@ -221,18 +222,76 @@ const LinePage: React.FC = () => {
     return infoObj
   }
 
+  // 전화번호 유효성 검사 함수 추가 - handleInfoFieldChange 함수 위에 추가
+  const validatePhone = (phoneNumber: string): boolean => {
+    // 한국 휴대폰 번호 정규식 (010-XXXX-XXXX 또는 010XXXXXXXX 형식)
+    const mobileRegex = /^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/
+
+    // 일반 전화번호까지 포함하려면 아래 정규식 사용
+    // const phoneRegex = /^(0[2-9][0-9]{1,2})-?([0-9]{3,4})-?([0-9]{4})$|^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$/
+
+    return mobileRegex.test(phoneNumber)
+  }
+
+  // 전화번호 입력 핸들러 수정 - handleAddInfoField 함수 위에 추가
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setPhone(value)
+
+    // 값이 비어있으면 에러 메시지 초기화
+    if (!value.trim()) {
+      setPhoneError("전화번호를 입력해주세요")
+      return
+    }
+
+    // 유효성 검사
+    if (!validatePhone(value)) {
+      setPhoneError("유효한 휴대폰 번호 형식이 아닙니다 (예: 010-1234-5678)")
+    } else {
+      setPhoneError(null)
+    }
+  }
+
+  const handleAddInfoField = () => {
+    setInfoFields([...infoFields, { key: "", value: "" }])
+  }
+
+  const handleRemoveInfoField = (index: number) => {
+    setInfoFields(infoFields.filter((_, i) => i !== index))
+  }
+
+  const handleInfoFieldChange = (index: number, field: "key" | "value", value: string) => {
+    const newFields = [...infoFields]
+    newFields[index][field] = value
+    setInfoFields(newFields)
+  }
+
+  // handleAddAttendee 함수 수정
   const handleAddAttendee = async () => {
-    if (!phone.trim() || !selectedLine) return
+    if (!phone.trim()) {
+      setPhoneError("전화번호를 입력해주세요")
+      return
+    }
+
+    if (phoneError) {
+      // 전화번호 오류가 있으면 제출하지 않음
+      return
+    }
+
+    if (!selectedLine) return
 
     try {
       const infoObj = prepareInfoObject()
 
       await axios.post(
-        `${config.backend}/line/${selectedLine.id}/queue/add`,
+        `${config.backend}/queue/add`,
         {
-          phone: phone,
-          name: name,
-          info: JSON.stringify(infoObj),
+          lineId: selectedLine.id,
+          attendee: {
+            phone: phone,
+            name: name,
+            info: JSON.stringify(infoObj),
+          }
         },
         {
           withCredentials: true,
@@ -248,7 +307,18 @@ const LinePage: React.FC = () => {
     }
   }
 
+  // handleUpdateAttendee 함수 수정
   const handleUpdateAttendee = async () => {
+    if (!phone.trim()) {
+      setPhoneError("전화번호를 입력해주세요")
+      return
+    }
+
+    if (phoneError) {
+      // 전화번호 오류가 있으면 제출하지 않음
+      return
+    }
+
     if (!editingAttendee || !selectedLine) return
 
     try {
@@ -275,37 +345,12 @@ const LinePage: React.FC = () => {
     }
   }
 
+  // resetAttendeeForm 함수 수정
   const resetAttendeeForm = () => {
     setPhone("")
     setName("손님")
+    setPhoneError(null)
     setInfoFields([{ key: "메모", value: "" }])
-  }
-
-  const startEditAttendee = (queue: Queue) => {
-    setEditingAttendee({
-      queueId: queue.id,
-      attendee: queue.attendee,
-    })
-    setPhone(queue.attendee.phone)
-    setName(queue.attendee.name)
-
-    // Parse the info JSON
-    try {
-      const infoObj = JSON.parse(queue.attendee.info)
-      if (typeof infoObj === "object" && infoObj !== null) {
-        const fields = Object.entries(infoObj).map(([key, value]) => ({
-          key,
-          value: String(value),
-        }))
-
-        setInfoFields(fields.length > 0 ? fields : [{ key: "메모", value: "" }])
-      } else {
-        setInfoFields([{ key: "메모", value: queue.attendee.info }])
-      }
-    } catch (e) {
-      // If parsing fails, set a default field
-      setInfoFields([{ key: "메모", value: queue.attendee.info || "" }])
-    }
   }
 
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -367,9 +412,8 @@ const LinePage: React.FC = () => {
     try {
       // Batch upload attendees
       await axios.post(
-        `${config.backend}/queue/batch-add`,
+        `${config.backend}/line/${selectedLine.id}/queue/batch-add`,
         {
-          lineId: selectedLine.id,
           attendees: excelData,
         },
         {
@@ -546,18 +590,33 @@ const LinePage: React.FC = () => {
     }
   }
 
-  const handleAddInfoField = () => {
-    setInfoFields([...infoFields, { key: "", value: "" }])
-  }
+  const startEditAttendee = (queue: Queue) => {
+    setEditingAttendee({ queueId: queue.id, attendee: queue.attendee })
+    setShowAddAttendee(true) // Show the form
+    setName(queue.attendee.name)
+    setPhone(queue.attendee.phone)
 
-  const handleRemoveInfoField = (index: number) => {
-    setInfoFields(infoFields.filter((_, i) => i !== index))
-  }
+    // Parse and set info fields
+    try {
+      const parsedInfo = JSON.parse(queue.attendee.info)
+      const infoFieldsArray: { key: string; value: string }[] = []
 
-  const handleInfoFieldChange = (index: number, field: "key" | "value", value: string) => {
-    const newFields = [...infoFields]
-    newFields[index][field] = value
-    setInfoFields(newFields)
+      for (const key in parsedInfo) {
+        if (parsedInfo.hasOwnProperty(key)) {
+          infoFieldsArray.push({ key: key, value: parsedInfo[key] })
+        }
+      }
+
+      // Ensure there's at least one field
+      if (infoFieldsArray.length === 0) {
+        infoFieldsArray.push({ key: "메모", value: "" })
+      }
+
+      setInfoFields(infoFieldsArray)
+    } catch (error) {
+      console.error("Error parsing attendee info:", error)
+      setInfoFields([{ key: "메모", value: "" }]) // Default
+    }
   }
 
   // const toggleUploadTooltip = () => { setShowUploadTooltip(!showUploadTooltip) } // 제거
@@ -728,7 +787,6 @@ const LinePage: React.FC = () => {
             <div className="flex-1">
               {selectedLine ? (
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 overflow-hidden">
-
                   <div className="flex flex-col mb-6 gap-3 md:gap-4">
                     <div className="flex items-center w-full">
                       <button
@@ -754,9 +812,7 @@ const LinePage: React.FC = () => {
                           }`}
                       >
                         <MoveVertical size={16} />
-                        <span className="whitespace-nowrap text-xs">
-                          {isDraggable ? "순서 저장" : "순서 변경"}
-                        </span>
+                        <span className="whitespace-nowrap text-xs">{isDraggable ? "순서 저장" : "순서 변경"}</span>
                       </button>
                       <button
                         onClick={handleShare}
@@ -777,9 +833,7 @@ const LinePage: React.FC = () => {
                         className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
                       >
                         <FileDown size={16} />
-                        <span className="whitespace-nowrap text-xs">
-                          엑셀 다운로드
-                        </span>
+                        <span className="whitespace-nowrap text-xs">엑셀 다운로드</span>
                       </button>
                     </div>
                   </div>
@@ -909,6 +963,7 @@ const LinePage: React.FC = () => {
                             placeholder="손님 이름"
                           />
                         </div>
+                        {/* 전화번호 입력 필드 수정 - 폼 내부의 전화번호 입력 부분을 찾아 아래 코드로 교체 */}
                         <div>
                           <label
                             htmlFor="phone"
@@ -920,11 +975,13 @@ const LinePage: React.FC = () => {
                             type="text"
                             id="phone"
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:border-gray-600"
+                            onChange={handlePhoneChange}
+                            className={`w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:border-gray-600 ${phoneError ? "border-red-500 dark:border-red-500" : ""
+                              }`}
                             placeholder="010-1234-5678"
                             required
                           />
+                          {phoneError && <p className="mt-1 text-sm text-red-500 dark:text-red-400">{phoneError}</p>}
                         </div>
 
                         {/* Additional Info Fields */}
@@ -972,6 +1029,7 @@ const LinePage: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* 버튼 부분 수정 - 폼 하단의 버튼 부분을 찾아 아래 코드로 교체 */}
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => {
@@ -985,8 +1043,11 @@ const LinePage: React.FC = () => {
                           </button>
                           <button
                             onClick={editingAttendee ? handleUpdateAttendee : handleAddAttendee}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                            disabled={!phone.trim()}
+                            className={`px-4 py-2 ${phoneError || !phone.trim()
+                              ? "bg-blue-300 cursor-not-allowed"
+                              : "bg-blue-500 hover:bg-blue-600"
+                              } text-white rounded-md`}
+                            disabled={!!phoneError || !phone.trim()}
                           >
                             {editingAttendee ? "수정" : "추가"}
                           </button>
@@ -1029,7 +1090,6 @@ const LinePage: React.FC = () => {
                                   <li>첫 번째 행은 열 제목이어야 합니다.</li>
                                   <li>첫번째 열:&nbsp;'이름', &nbsp;두번째 열:&nbsp;'전화번호'</li>
                                   <li>그 외 열은 추가 정보로 자동 저장됩니다.</li>
-                                  <li>파일 확장자는 csv, xlsx 만 가능합니다.</li>
                                 </ul>
                                 <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
                               </Tooltip.Content>
@@ -1040,7 +1100,7 @@ const LinePage: React.FC = () => {
                           type="file"
                           ref={fileInputRef}
                           onChange={handleExcelUpload}
-                          accept=".xlsx,.csv"
+                          accept=".xlsx,.xls"
                           className="hidden"
                         />
                       </div>
@@ -1066,12 +1126,13 @@ const LinePage: React.FC = () => {
                         <p>위의 '대기자 추가' 버튼을 눌러 대기자를 추가해보세요.</p>
                       </div>
                     ) : (
-
                       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <SortableContext
                           items={queues.map((q) => `queue-${q.id}`)}
                           strategy={verticalListSortingStrategy}
-                        >           <div className="space-y-3">
+                        >
+                          {" "}
+                          <div className="space-y-3">
                             {queues.map((queue) => (
                               <QueueItem
                                 key={queue.id}

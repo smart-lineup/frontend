@@ -14,6 +14,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-tooltip": "^1.1.8",
+    "@tosspayments/tosspayments-sdk": "^2.3.4",
     "axios": "^1.8.3",
     "i18next": "^24.2.3",
     "lucide-react": "^0.481.0",
