@@ -14,9 +14,6 @@ const PaymentFakeSuccess = () => {
     const authKey = queryParams.get("authKey");
     const darkMode = useDarkMode();
 
-    
-
-
     let isAlreadySend = false;
     useEffect(() => {
         if (!customerKey || !authKey) {
@@ -34,15 +31,17 @@ const PaymentFakeSuccess = () => {
         }
 
         window.addEventListener("beforeunload", handleBeforeUnload)
-        async function pay() {
+        async function process() {
             try {
-                await axios.post(config.backend + '/payment/issue/key', {
-                    customerKey,
-                    authKey
-                }, {
-                    withCredentials: true
-                });
-
+                if (customerKey != "existing") {
+                    await axios.post(config.backend + '/payment/issue/key', {
+                        customerKey,
+                        authKey
+                    }, {
+                        withCredentials: true
+                    });
+                }
+                
                 await axios.post(config.backend + '/payment/pay', {}, {
                     withCredentials: true
                 });
@@ -52,9 +51,8 @@ const PaymentFakeSuccess = () => {
                 console.log(e);
                 naviagte("/payment/fail");
             }
-            
         }
-        pay();
+        process();
     }, []);
 
     return (

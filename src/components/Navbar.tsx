@@ -145,7 +145,7 @@ const Navbar: React.FC = () => {
                                             className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                             role="menuitem"
                                         >
-                                            세팅
+                                            설정
                                         </a>
                                     </li>
                                     <li>
@@ -218,7 +218,7 @@ const Navbar: React.FC = () => {
                                     href="#"
                                     className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                                 >
-                                    세팅
+                                    설정
                                 </a>
                                 <button
                                     onClick={handleLogout}
