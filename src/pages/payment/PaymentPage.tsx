@@ -9,18 +9,32 @@ import { loadTossPayments } from "@tosspayments/tosspayments-sdk"
 import config from "../../config"
 import axios from "axios"
 import { useAuth } from "../../components/AuthContext"
+import CardShape from "../../components/payment/CardShape"
+import PaymentModal from "./PaymentModal"
 
 interface UuidResponse {
-    data: {
-        uuid: string
-    }
+    uuid: string
+}
+
+type PaymentResponse = {
+    isExist: boolean
+    cardLastNumber: string
+    endAt: Date
+    isSubscribe: boolean
+    planType: string
+    status: BillingStatus
+}
+
+enum BillingStatus {
+    ACTIVE = "ACTIVE",
+    CANCEL = "CANCEL",
 }
 
 const PaymentPage: React.FC = () => {
     const { darkMode } = useDarkMode()
     const navigate = useNavigate()
+
     const [isAnnual, setIsAnnual] = useState(true)
-    const [paymentMethod, setPaymentMethod] = useState<"toss" | "direct">("toss")
     const [isProcessing, setIsProcessing] = useState(false)
     const [tossPayment, setTossPayment] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -28,6 +42,19 @@ const PaymentPage: React.FC = () => {
     const [showCardModal, setShowCardModal] = useState(false)
     const [cardModalLoading, setCardModalLoading] = useState(false)
     const [cardLastNumber, setCardLastNumber] = useState<string>("")
+    const [isSubscribe, setIsSubscribe] = useState<boolean>(false)
+    const [subscribeEndAt, setSubscribeEndAt] = useState<Date | null>(null)
+    const [showSuccessModal, setShowSuccessModal] = useState(false)
+    const [successMessage, setSuccessMessage] = useState("")
+    const [currentPlanType, setCurrentPlanType] = useState<string>("")
+    const [billingStatus, setBillingStatus] = useState<BillingStatus>(BillingStatus.CANCEL)
+
+    const [alertModal, setAlertModal] = useState({
+        isOpen: false,
+        title: "",
+        message: "",
+        type: "info" as "success" | "error" | "warning" | "info",
+    })
 
     // 월간/연간 가격 계산
     const annualPrice = 7900
@@ -39,7 +66,7 @@ const PaymentPage: React.FC = () => {
     useEffect(() => {
         async function initTossPayments() {
             try {
-                const response: UuidResponse = await axios.get(config.backend + "/user/uuid", { withCredentials: true })
+                const response = await axios.get<UuidResponse>(config.backend + "/user/uuid", { withCredentials: true })
                 setIsLoading(true)
                 const tossPayments = await loadTossPayments(config.TOSS_CLIENT_KEY)
                 const payment = tossPayments.payment({ customerKey: response.data.uuid })
@@ -71,10 +98,16 @@ const PaymentPage: React.FC = () => {
                 },
             )
 
-            const response = await axios.get(config.backend + "/payment/before/info", {
+            const response = await axios.get<PaymentResponse>(config.backend + "/payment/info", {
                 withCredentials: true,
             })
 
+            if (response.data.isSubscribe) {
+                setIsSubscribe(true)
+                setSubscribeEndAt(new Date(response.data.endAt))
+                setCurrentPlanType(response.data.planType)
+                setBillingStatus(response.data.status)
+            }
             if (response.data.isExist == true) {
                 // 기존 confirm 대신 모달 표시
                 setIsProcessing(false)
@@ -102,6 +135,36 @@ const PaymentPage: React.FC = () => {
         try {
             setCardLastNumber("")
             setCardModalLoading(true)
+
+            const planType = isAnnual ? "ANNUAL" : "MONTHLY"
+            if (currentPlanType === planType && billingStatus === BillingStatus.ACTIVE) {
+                setCardModalLoading(false)
+                setShowCardModal(false)
+                setAlertModal({
+                    isOpen: true,
+                    title: "알림",
+                    message: "이미 같은 구독이 활성화되어 있습니다.",
+                    type: "warning",
+                })
+                return
+            }
+            if (isSubscribe) {
+                setCardModalLoading(false)
+                setShowCardModal(false)
+                await axios.put(
+                    config.backend + "/payment/plan-type",
+                    {
+                        planType: isAnnual ? "ANNUAL" : "MONTHLY",
+                    },
+                    {
+                        withCredentials: true,
+                    },
+                )
+                setSuccessMessage("결제 설정이 완료되었습니다.")
+                setShowSuccessModal(true)
+                return
+            }
+
             setTimeout(() => {
                 navigate("/payment/success?customerKey=existing&authKey=existing")
             }, 1000)
@@ -109,6 +172,13 @@ const PaymentPage: React.FC = () => {
             console.error("기존 카드 결제 오류:", error)
             setCardModalLoading(false)
             setShowCardModal(false)
+            // 에러 모달 표시
+            setAlertModal({
+                isOpen: true,
+                title: "오류",
+                message: "결제 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+                type: "error",
+            })
         }
     }
 
@@ -131,12 +201,37 @@ const PaymentPage: React.FC = () => {
                 } catch (error) {
                     console.error("빌링 요청 오류:", error)
                     setCardModalLoading(false)
+                    // 에러 모달 표시
+                    setAlertModal({
+                        isOpen: true,
+                        title: "오류",
+                        message: "카드 등록 중 오류가 발생했습니다. 다시 시도해주세요.",
+                        type: "error",
+                    })
                 }
             }, 500)
         } catch (error) {
             console.error("새 카드 등록 오류:", error)
             setCardModalLoading(false)
+            // 에러 모달 표시
+            setAlertModal({
+                isOpen: true,
+                title: "오류",
+                message: "카드 등록 중 오류가 발생했습니다. 다시 시도해주세요.",
+                type: "error",
+            })
         }
+    }
+
+    // 성공 모달 닫기 함수 추가
+    const closeSuccessModal = () => {
+        setShowSuccessModal(false)
+        navigate("/")
+    }
+
+    // 알림 모달 닫기 함수
+    const closeAlertModal = () => {
+        setAlertModal((prev) => ({ ...prev, isOpen: false }))
     }
 
     return (
@@ -155,56 +250,26 @@ const PaymentPage: React.FC = () => {
                         </div>
 
                         <h3 className="text-xl font-bold mb-2 text-center dark:text-white">결제 방법 선택</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-center mb-3">기존에 등록된 카드로 결제하시겠습니까?</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-center mb-3">
+                            {isSubscribe ? (
+                                <>
+                                    아직 사용중인 구독이 존재합니다.
+                                    <br />
+                                    마지막 구독 날짜 다음날 결제가 진행됩니다.
+                                    <br />
+                                    {subscribeEndAt &&
+                                        `(마지막 날짜: ${subscribeEndAt.toLocaleDateString("ko-KR", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })})`}
+                                </>
+                            ) : (
+                                <>기존에 등록된 카드로 결제하시겠습니까?</>
+                            )}
+                        </p>
 
-                        <div className="mx-auto mb-6 max-w-[280px]">
-                            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 shadow-md text-white relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mt-6 -mr-6"></div>
-                                <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -mb-4 -ml-4"></div>
-
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="text-xs font-light opacity-80">등록된 카드</div>
-                                    <div className="flex items-center">
-                                        <CreditCardIcon className="h-5 w-5 mr-1" />
-                                    </div>
-                                </div>
-
-                                <div className="mb-6 flex items-center">
-                                    <div className="mr-2 w-8 h-5 bg-white/20 rounded"></div>
-                                    <div className="mr-2 w-8 h-5 bg-white/20 rounded"></div>
-                                    <div className="mr-2 w-8 h-5 bg-white/20 rounded"></div>
-                                    <div className="font-mono text-lg">{cardLastNumber}</div>
-                                </div>
-
-                                <div className="flex justify-between items-end">
-                                    <div>
-                                        <div className="text-xs opacity-70">카드 결제자</div>
-                                        <div className="font-medium">{username || "사용자"}</div>
-                                    </div>
-                                    <div className="opacity-80">
-                                        <svg width="40" height="12" viewBox="0 0 21 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M17.9 0H3.1C1.4 0 0 1.4 0 3.1V11.9C0 13.6 1.4 15 3.1 15H17.9C19.6 15 21 13.6 21 11.9V3.1C21 1.4 19.6 0 17.9 0Z"
-                                                fill="white"
-                                            />
-                                            <path
-                                                d="M17.9 0H3.1C1.4 0 0 1.4 0 3.1V11.9C0 13.6 1.4 15 3.1 15H17.9C19.6 15 21 13.6 21 11.9V3.1C21 1.4 19.6 0 17.9 0Z"
-                                                fill="white"
-                                            />
-                                            <path d="M8.3 12.9H12.7V2.1H8.3V12.9Z" fill="#FF5F00" />
-                                            <path
-                                                d="M8.7 7.5C8.7 5.3 9.8 3.3 11.5 2.1C10.4 1.2 9 0.7 7.5 0.7C3.9 0.7 1 3.7 1 7.5C1 11.3 3.9 14.3 7.5 14.3C9 14.3 10.4 13.8 11.5 12.9C9.8 11.7 8.7 9.7 8.7 7.5Z"
-                                                fill="#EB001B"
-                                            />
-                                            <path
-                                                d="M20 7.5C20 11.3 17.1 14.3 13.5 14.3C12 14.3 10.6 13.8 9.5 12.9C11.2 11.7 12.3 9.7 12.3 7.5C12.3 5.3 11.2 3.3 9.5 2.1C10.6 1.2 12 0.7 13.5 0.7C17.1 0.7 20 3.7 20 7.5Z"
-                                                fill="#F79E1B"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <CardShape cardLastNumber={cardLastNumber} username={username} />
 
                         <div className="space-y-4">
                             <button
@@ -248,6 +313,28 @@ const PaymentPage: React.FC = () => {
                 </div>
             )}
 
+            {/* 성공 모달 - 컴포넌트로 대체 */}
+            <PaymentModal
+                isOpen={showSuccessModal}
+                onClose={closeSuccessModal}
+                title="완료"
+                message={successMessage}
+                type="success"
+                confirmText="확인"
+                onConfirm={closeSuccessModal}
+            />
+
+            {/* 알림 모달 */}
+            <PaymentModal
+                isOpen={alertModal.isOpen}
+                onClose={closeAlertModal}
+                title={alertModal.title}
+                message={alertModal.message}
+                type={alertModal.type}
+                confirmText="확인"
+                onConfirm={closeAlertModal}
+            />
+
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
                 <div className="container mx-auto px-4 py-12">
                     <Link to="/pricing" className="inline-flex items-center text-blue-500 hover:text-blue-600 mb-8">
@@ -269,8 +356,8 @@ const PaymentPage: React.FC = () => {
                                             type="button"
                                             onClick={() => setIsAnnual(false)}
                                             className={`flex-1 py-2 px-4 text-sm font-medium ${!isAnnual
-                                                    ? "bg-blue-500 text-white"
-                                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                                ? "bg-blue-500 text-white"
+                                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                                 }`}
                                         >
                                             월간 결제
@@ -279,8 +366,8 @@ const PaymentPage: React.FC = () => {
                                             type="button"
                                             onClick={() => setIsAnnual(true)}
                                             className={`flex-1 py-2 px-4 text-sm font-medium ${isAnnual
-                                                    ? "bg-blue-500 text-white"
-                                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                                ? "bg-blue-500 text-white"
+                                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                                 }`}
                                         >
                                             연간 결제 ({Math.round(annualSaving)}% 할인)
@@ -292,14 +379,7 @@ const PaymentPage: React.FC = () => {
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium mb-2">결제 방식</label>
                                     <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                                        <button
-                                            type="button"
-                                            onClick={() => setPaymentMethod("toss")}
-                                            className={`flex-1 py-2 px-4 text-sm font-medium ${paymentMethod === "toss"
-                                                    ? "bg-blue-500 text-white"
-                                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
-                                                }`}
-                                        >
+                                        <button type="button" className={`flex-1 py-2 px-4 text-sm font-medium bg-blue-500 text-white`}>
                                             토스페이먼츠
                                         </button>
                                     </div>
