@@ -26,8 +26,10 @@ type PaymentResponse = {
 }
 
 enum BillingStatus {
+    NONE = "NONE",
     ACTIVE = "ACTIVE",
     CANCEL = "CANCEL",
+    EXPIRED = "EXPIRED"
 }
 
 const PaymentPage: React.FC = () => {
