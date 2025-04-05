@@ -11,6 +11,7 @@ import axios from "axios"
 import { useAuth } from "../../components/AuthContext"
 import CardShape from "../../components/payment/CardShape"
 import PaymentModal from "./PaymentModal"
+import { BillingStatus } from "../../components/types"
 
 interface UuidResponse {
     uuid: string
@@ -23,13 +24,6 @@ type PaymentResponse = {
     isSubscribe: boolean
     planType: string
     status: BillingStatus
-}
-
-enum BillingStatus {
-    NONE = "NONE",
-    ACTIVE = "ACTIVE",
-    CANCEL = "CANCEL",
-    EXPIRED = "EXPIRED"
 }
 
 const PaymentPage: React.FC = () => {
@@ -271,7 +265,7 @@ const PaymentPage: React.FC = () => {
                             )}
                         </p>
 
-                        <CardShape cardLastNumber={cardLastNumber} username={username} />
+                        <CardShape cardLastNumber={cardLastNumber} username={username ? username : ""} />
 
                         <div className="space-y-4">
                             <button

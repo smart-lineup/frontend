@@ -2,7 +2,7 @@ import { CreditCardIcon } from "lucide-react"
 
 type CardShapeProps = {
     cardLastNumber: string;
-    username: string | null;
+    username: string;
 };
 
 const CardShape: React.FC<CardShapeProps> = ({ cardLastNumber, username }) => {

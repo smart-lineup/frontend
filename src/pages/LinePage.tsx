@@ -71,8 +71,6 @@ const LinePage: React.FC = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    console.log(username)
-    console.log(isAuthenticated)
     if (!authLoading && !isAuthenticated) {
       alert("로그인이 필요합니다.")
       navigate("/")

@@ -12,9 +12,10 @@ import { DarkModeProvider } from './components/DarkModeContext';
 import AttendeeInputPage from './pages/AttendeeInputPage';
 import { AuthProvider } from './components/AuthContext';
 import PaymentPage from './pages/payment/PaymentPage';
-import PaymentFakeSuccess from './pages/payment/paymentFakeSuccess';
-import PaymentSuccessPage from './pages/payment/paymentSuccess';
-import PricingPage from './pages/payment/pricing';
+import PaymentFakeSuccess from './pages/payment/PaymentFakeSuccess';
+import PaymentSuccessPage from './pages/payment/PaymentSuccess';
+import PricingPage from './pages/payment/Pricing';
+import SettingsPage from './pages/settings/SettingsPage';
 
 function App() {
     return (
@@ -35,6 +36,7 @@ function App() {
                         <Route path='/payment' element={<PaymentPage/>} />
                         <Route path='/payment/success' element={<PaymentFakeSuccess />} />
                         <Route path='/payment/pay/success' element={<PaymentSuccessPage />} />
+                        <Route path='/settings' element={<SettingsPage/>}/>
                     </Routes>
                 </DarkModeProvider>
             </BrowserRouter>

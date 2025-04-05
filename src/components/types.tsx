@@ -24,3 +24,10 @@ export interface Line {
     name: string;
     uuid: string;
 }
+
+export enum BillingStatus {
+    NONE = "NONE",
+    ACTIVE = "ACTIVE",
+    CANCEL = "CANCEL",
+    EXPIRED = "EXPIRED"
+}
