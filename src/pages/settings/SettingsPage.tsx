@@ -37,6 +37,7 @@ interface SubscriptionInfo {
     planType: string
     status: BillingStatus
     nextPaymentDate?: string
+    isRefundable?: boolean
 }
 
 type SettingsTab = "profile" | "subscription"
@@ -77,7 +78,7 @@ const SettingsPage: React.FC = () => {
         title: "",
         message: "",
         type: "warning" as "success" | "error" | "warning" | "info",
-        action: "" as "cancel" | "change" | "",
+        action: "" as "cancel" | "change" | "refund" | "",
     })
 
     // 알림 모달 상태
@@ -177,6 +178,47 @@ const SettingsPage: React.FC = () => {
         }
     }
 
+    // 환불 가능 여부 확인
+    const isRefundable = () => {
+        if (!subscriptionInfo?.isRefundable) return false
+        return true
+    }
+
+    // 환불 처리
+    const handleRefund = async () => {
+        try {
+            setIsProcessing(true)
+            await axios.post(
+                `${config.backend}/payment/refund`,
+                {},
+                {
+                    withCredentials: true,
+                },
+            )
+
+            setAlertModal({
+                isOpen: true,
+                title: "환불 신청 완료",
+                message: "환불이 성공적으로 신청되었습니다. 결제 수단에 따라 환불 처리에 3-5일이 소요될 수 있습니다.",
+                type: "success",
+            })
+
+            // 구독 정보 업데이트 (환불 후에는 구독이 없는 상태로)
+            setSubscriptionInfo((prev) => (prev ? { ...prev, isSubscribe: false } : null))
+        } catch (error) {
+            console.error("환불 처리에 실패했습니다:", error)
+            setAlertModal({
+                isOpen: true,
+                title: "오류",
+                message: "환불 처리에 실패했습니다. 고객센터로 문의해주세요.",
+                type: "error",
+            })
+        } finally {
+            setIsProcessing(false)
+            setConfirmModal((prev) => ({ ...prev, isOpen: false }))
+        }
+    }
+
     // 구독 취소 처리
     const handleCancelSubscription = async () => {
         try {
@@ -190,7 +232,7 @@ const SettingsPage: React.FC = () => {
             )
 
             // 구독 정보 업데이트
-            // setSubscriptionInfo((prev) => (prev ? { ...prev, status: 1 } : null))
+            setSubscriptionInfo((prev) => (prev ? { ...prev, status: BillingStatus.CANCEL } : null))
 
             setAlertModal({
                 isOpen: true,
@@ -258,6 +300,8 @@ const SettingsPage: React.FC = () => {
             handleCancelSubscription()
         } else if (confirmModal.action === "change") {
             handleChangePlan()
+        } else if (confirmModal.action === "refund") {
+            handleRefund()
         }
     }
 
@@ -378,7 +422,7 @@ const SettingsPage: React.FC = () => {
             )
         }
 
-        const isActive = subscriptionInfo.status === BillingStatus.ACTIVE
+        const isActive = subscriptionInfo.status === BillingStatus.ACTIVE && subscriptionInfo.nextPaymentDate
         const planType = subscriptionInfo.planType === "ANNUAL" ? "연간" : "월간"
         const endDate = new Date(subscriptionInfo.endAt).toLocaleDateString("ko-KR", {
             year: "numeric",
@@ -422,7 +466,11 @@ const SettingsPage: React.FC = () => {
                                 <span>다음 결제 예정일</span>
                             </div>
                             <span className="font-medium">
-                                {new Date(subscriptionInfo.nextPaymentDate).toLocaleDateString("ko-KR")}
+                                {new Date(subscriptionInfo.nextPaymentDate).toLocaleDateString("ko-KR", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                })}
                             </span>
                         </div>
                     )}
@@ -439,6 +487,25 @@ const SettingsPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-3">
                     {isActive && (
                         <>
+                            {isRefundable() && (
+                                <button
+                                    onClick={() =>
+                                        setConfirmModal({
+                                            isOpen: true,
+                                            title: "환불 신청",
+                                            message: "정말로 환불을 신청하시겠습니까? 환불 처리 후에는 서비스 이용이 즉시 중단됩니다.",
+                                            type: "warning",
+                                            action: "refund",
+                                        })
+                                    }
+                                    disabled={isProcessing}
+                                    className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-md flex items-center justify-center"
+                                >
+                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                    환불 신청
+                                </button>
+                            )}
+
                             <button
                                 onClick={() =>
                                     setConfirmModal({
@@ -485,6 +552,17 @@ const SettingsPage: React.FC = () => {
                         </Link>
                     )}
                 </div>
+                {isActive && (
+                    <div className="mt-4 text-sm text-gray-500 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+                        <p className="font-medium mb-1">환불 정책 안내</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li>구매일 다음날 자정까지만 환불이 가능합니다.</li>
+                            <li>환불 시 즉시 서비스 이용이 중단됩니다.</li>
+                            <li>결제 수단에 따라 환불 처리에 3-5일이 소요될 수 있습니다.</li>
+                            <li>환불 관련 문의는 고객센터(pkt0758@gmail.com)로 연락해주세요.</li>
+                        </ul>
+                    </div>
+                )}
             </div>
         )
     }
@@ -527,10 +605,12 @@ const SettingsPage: React.FC = () => {
                                                     <span
                                                         className={`px-2 py-1 rounded-full text-xs ${payment.status === "PAID"
                                                                 ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                                                                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                                                                : payment.status === "REFUND"
+                                                                    ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                                                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
                                                             }`}
                                                     >
-                                                        {payment.status === "PAID" ? "결제 완료" : "실패"}
+                                                        {payment.status === "PAID" ? "결제 완료" : payment.status === "REFUND" ? "환불" : "실패"}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-sm">{payment.method === "CARD" ? "카드" : payment.method}</td>
