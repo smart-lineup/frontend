@@ -6,7 +6,7 @@ import config from "../../config";
 import { CreditCard, RefreshCw } from "lucide-react"
 import { useDarkMode } from "../../components/DarkModeContext";
 
-const PaymentFakeSuccess = () => {
+const PaymentProcessing = () => {
     const location = useLocation();
     const naviagte = useNavigate();
     const queryParams = new URLSearchParams(location.search);
@@ -97,4 +97,4 @@ const PaymentFakeSuccess = () => {
     )
 }
 
-export default PaymentFakeSuccess;
+export default PaymentProcessing;

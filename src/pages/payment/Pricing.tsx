@@ -5,19 +5,17 @@ import { useState } from "react"
 import { Check, X, CreditCard, ArrowRight, ArrowLeft } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useDarkMode } from "../../components/DarkModeContext"
-import { useAuth } from "../../components/AuthContext";
+import { useAuth } from "../../components/AuthContext"
+import { usePlanTypeInfo } from "../../components/payment/PlanTypeInfo"
 
 const PricingPage: React.FC = () => {
     const { darkMode } = useDarkMode()
     const [isAnnual, setIsAnnual] = useState(true)
     const navigate = useNavigate()
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth()
+    const { premiumPrice, annualSaving } = usePlanTypeInfo(isAnnual)
 
-    // 월간/연간 가격 계산
-    const annualPrice = 7900
-    const monthlyPrice = 9900
-    const premiumPrice = isAnnual ? annualPrice : monthlyPrice
-    const annualSaving = ((monthlyPrice * 12 - annualPrice * 12) / (monthlyPrice * 12)) * 100
+    const paymentUrl = `/payment?plan=${isAnnual ? "annual" : "monthly"}`
 
     return (
         <div className={darkMode ? "dark" : ""}>
@@ -39,8 +37,8 @@ const PricingPage: React.FC = () => {
                             <button
                                 onClick={() => setIsAnnual(false)}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${!isAnnual
-                                    ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
-                                    : "text-gray-600 dark:text-gray-400"
+                                        ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                                        : "text-gray-600 dark:text-gray-400"
                                     }`}
                             >
                                 월간 결제
@@ -48,8 +46,8 @@ const PricingPage: React.FC = () => {
                             <button
                                 onClick={() => setIsAnnual(true)}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${isAnnual
-                                    ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
-                                    : "text-gray-600 dark:text-gray-400"
+                                        ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                                        : "text-gray-600 dark:text-gray-400"
                                     }`}
                             >
                                 연간 결제
@@ -119,7 +117,7 @@ const PricingPage: React.FC = () => {
                                 </div>
 
                                 <Link
-                                    to="/payment"
+                                    to={paymentUrl}
                                     className="block w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white text-center rounded-lg font-medium transition-colors duration-200 flex items-center justify-center"
                                 >
                                     <CreditCard className="mr-2 h-5 w-5" />
@@ -245,8 +243,8 @@ const PricingPage: React.FC = () => {
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
                                 <h3 className="font-bold text-lg mb-2">환불 정책은 어떻게 되나요?</h3>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    구매 후 14일 이내에 요청하시면 전액 환불해 드립니다. 14일이 지난 후에는 부분 환불이 가능합니다. 자세한
-                                    내용은 고객센터로 문의해 주세요.
+                                    구매 후 다음날까지 언제든지 전액 환불이 가능합니다. 예를 들어, 4월 4일에 결제하셨다면 4월 5일 23시
+                                    59분까지 환불 요청이 가능합니다. 환불은 단순 변심의 경우에도 문제없이 처리해드립니다.
                                 </p>
                             </div>
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
@@ -274,7 +272,7 @@ const PricingPage: React.FC = () => {
                                 무료로 시작하기
                             </Link>
                             <Link
-                                to="/payment"
+                                to={paymentUrl}
                                 className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center"
                             >
                                 Premium 가입하기

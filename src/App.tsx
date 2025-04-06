@@ -12,7 +12,7 @@ import { DarkModeProvider } from './components/DarkModeContext';
 import AttendeeInputPage from './pages/AttendeeInputPage';
 import { AuthProvider } from './components/AuthContext';
 import PaymentPage from './pages/payment/PaymentPage';
-import PaymentFakeSuccess from './pages/payment/PaymentFakeSuccess';
+import PaymentProcessing from './pages/payment/PaymentProcessing';
 import PaymentSuccessPage from './pages/payment/PaymentSuccess';
 import PricingPage from './pages/payment/Pricing';
 import SettingsPage from './pages/settings/SettingsPage';
@@ -34,7 +34,7 @@ function App() {
                         <Route path='/find/password/reset' element={<ChangePasswordPage />} />
                         <Route path='/pricing' element={<PricingPage />} />
                         <Route path='/payment' element={<PaymentPage/>} />
-                        <Route path='/payment/success' element={<PaymentFakeSuccess />} />
+                        <Route path='/payment/success' element={<PaymentProcessing />} />
                         <Route path='/payment/pay/success' element={<PaymentSuccessPage />} />
                         <Route path='/settings' element={<SettingsPage/>}/>
                     </Routes>

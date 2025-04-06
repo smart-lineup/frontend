@@ -31,3 +31,14 @@ export enum BillingStatus {
     CANCEL = "CANCEL",
     EXPIRED = "EXPIRED"
 }
+
+export interface SubscriptionInfo {
+    isExist: boolean
+    isSubscribe: boolean
+    cardLastNumber: string
+    endAt: string
+    planType: string
+    status: BillingStatus
+    nextPaymentDate?: string
+    isRefundable?: boolean
+}

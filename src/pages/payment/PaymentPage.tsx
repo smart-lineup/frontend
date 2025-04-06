@@ -4,46 +4,42 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useDarkMode } from "../../components/DarkModeContext"
 import { Check, ArrowLeft, CreditCardIcon, CheckCircle, CreditCard } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk"
 import config from "../../config"
 import axios from "axios"
 import { useAuth } from "../../components/AuthContext"
 import CardShape from "../../components/payment/CardShape"
 import PaymentModal from "./PaymentModal"
-import { BillingStatus } from "../../components/types"
+import { BillingStatus, type SubscriptionInfo } from "../../components/types"
+import { usePlanTypeInfo } from "../../components/payment/PlanTypeInfo"
 
 interface UuidResponse {
     uuid: string
 }
 
-type PaymentResponse = {
-    isExist: boolean
-    cardLastNumber: string
-    endAt: Date
-    isSubscribe: boolean
-    planType: string
-    status: BillingStatus
-}
-
 const PaymentPage: React.FC = () => {
     const { darkMode } = useDarkMode()
     const navigate = useNavigate()
+    const location = useLocation()
 
-    const [isAnnual, setIsAnnual] = useState(true)
+    // URL에서 plan 파라미터 읽기
+    const searchParams = new URLSearchParams(location.search)
+    const planParam = searchParams.get("plan")
+
+    // plan 파라미터에 따라 초기 isAnnual 값 설정
+    const [isAnnual, setIsAnnual] = useState(planParam === "monthly" ? false : true)
+
     const [isProcessing, setIsProcessing] = useState(false)
     const [tossPayment, setTossPayment] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
     const { username, email } = useAuth()
     const [showCardModal, setShowCardModal] = useState(false)
     const [cardModalLoading, setCardModalLoading] = useState(false)
-    const [cardLastNumber, setCardLastNumber] = useState<string>("")
-    const [isSubscribe, setIsSubscribe] = useState<boolean>(false)
-    const [subscribeEndAt, setSubscribeEndAt] = useState<Date | null>(null)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
     const [successMessage, setSuccessMessage] = useState("")
-    const [currentPlanType, setCurrentPlanType] = useState<string>("")
-    const [billingStatus, setBillingStatus] = useState<BillingStatus>(BillingStatus.CANCEL)
+    const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null)
+    const { premiumPrice, annualSaving } = usePlanTypeInfo(isAnnual)
 
     const [alertModal, setAlertModal] = useState({
         isOpen: false,
@@ -52,11 +48,18 @@ const PaymentPage: React.FC = () => {
         type: "info" as "success" | "error" | "warning" | "info",
     })
 
-    // 월간/연간 가격 계산
-    const annualPrice = 7900
-    const monthlyPrice = 9900
-    const premiumPrice = isAnnual ? annualPrice * 12 : monthlyPrice
-    const annualSaving = ((monthlyPrice * 12 - annualPrice * 12) / (monthlyPrice * 12)) * 100
+    // 요금제 변경 시 URL도 업데이트
+    const updatePlanInUrl = (isAnnual: boolean) => {
+        const newSearchParams = new URLSearchParams(location.search)
+        newSearchParams.set("plan", isAnnual ? "annual" : "monthly")
+        navigate(`${location.pathname}?${newSearchParams.toString()}`, { replace: true })
+    }
+
+    // 요금제 변경 핸들러
+    const handlePlanChange = (annual: boolean) => {
+        setIsAnnual(annual)
+        updatePlanInUrl(annual)
+    }
 
     // 토스페이먼츠 초기화
     useEffect(() => {
@@ -86,7 +89,6 @@ const PaymentPage: React.FC = () => {
             await axios.post(
                 config.backend + "/payment/info",
                 {
-                    price: isAnnual ? annualPrice : monthlyPrice,
                     planType: isAnnual ? "ANNUAL" : "MONTHLY",
                 },
                 {
@@ -94,20 +96,13 @@ const PaymentPage: React.FC = () => {
                 },
             )
 
-            const response = await axios.get<PaymentResponse>(config.backend + "/payment/info", {
+            const response = await axios.get<SubscriptionInfo>(config.backend + "/payment/info", {
                 withCredentials: true,
             })
+            setSubscriptionInfo(response.data)
 
-            if (response.data.isSubscribe) {
-                setIsSubscribe(true)
-                setSubscribeEndAt(new Date(response.data.endAt))
-                setCurrentPlanType(response.data.planType)
-                setBillingStatus(response.data.status)
-            }
             if (response.data.isExist == true) {
-                // 기존 confirm 대신 모달 표시
                 setIsProcessing(false)
-                setCardLastNumber(response.data.cardLastNumber)
                 setShowCardModal(true)
                 return
             }
@@ -129,11 +124,14 @@ const PaymentPage: React.FC = () => {
     // 기존 카드로 결제하는 함수 추가
     const proceedWithExistingCard = async () => {
         try {
-            setCardLastNumber("")
             setCardModalLoading(true)
 
             const planType = isAnnual ? "ANNUAL" : "MONTHLY"
-            if (currentPlanType === planType && billingStatus === BillingStatus.ACTIVE) {
+            if (
+                subscriptionInfo?.planType === planType &&
+                subscriptionInfo.status === BillingStatus.ACTIVE &&
+                subscriptionInfo.nextPaymentDate
+            ) {
                 setCardModalLoading(false)
                 setShowCardModal(false)
                 setAlertModal({
@@ -144,7 +142,7 @@ const PaymentPage: React.FC = () => {
                 })
                 return
             }
-            if (isSubscribe) {
+            if (subscriptionInfo?.isSubscribe) {
                 setCardModalLoading(false)
                 setShowCardModal(false)
                 await axios.put(
@@ -247,14 +245,14 @@ const PaymentPage: React.FC = () => {
 
                         <h3 className="text-xl font-bold mb-2 text-center dark:text-white">결제 방법 선택</h3>
                         <p className="text-gray-600 dark:text-gray-400 text-center mb-3">
-                            {isSubscribe ? (
+                            {subscriptionInfo?.isSubscribe ? (
                                 <>
                                     아직 사용중인 구독이 존재합니다.
                                     <br />
                                     마지막 구독 날짜 다음날 결제가 진행됩니다.
                                     <br />
-                                    {subscribeEndAt &&
-                                        `(마지막 날짜: ${subscribeEndAt.toLocaleDateString("ko-KR", {
+                                    {subscriptionInfo?.endAt &&
+                                        `(마지막 날짜: ${new Date(subscriptionInfo.endAt).toLocaleDateString("ko-KR", {
                                             year: "numeric",
                                             month: "long",
                                             day: "numeric",
@@ -265,7 +263,10 @@ const PaymentPage: React.FC = () => {
                             )}
                         </p>
 
-                        <CardShape cardLastNumber={cardLastNumber} username={username ? username : ""} />
+                        <CardShape
+                            cardLastNumber={subscriptionInfo?.cardLastNumber ? subscriptionInfo.cardLastNumber : ""}
+                            username={username ? username : ""}
+                        />
 
                         <div className="space-y-4">
                             <button
@@ -350,20 +351,20 @@ const PaymentPage: React.FC = () => {
                                     <div className="flex border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                                         <button
                                             type="button"
-                                            onClick={() => setIsAnnual(false)}
+                                            onClick={() => handlePlanChange(false)}
                                             className={`flex-1 py-2 px-4 text-sm font-medium ${!isAnnual
-                                                ? "bg-blue-500 text-white"
-                                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                                    ? "bg-blue-500 text-white"
+                                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                                 }`}
                                         >
                                             월간 결제
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setIsAnnual(true)}
+                                            onClick={() => handlePlanChange(true)}
                                             className={`flex-1 py-2 px-4 text-sm font-medium ${isAnnual
-                                                ? "bg-blue-500 text-white"
-                                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                                    ? "bg-blue-500 text-white"
+                                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                                 }`}
                                         >
                                             연간 결제 ({Math.round(annualSaving)}% 할인)

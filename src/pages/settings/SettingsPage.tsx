@@ -21,23 +21,13 @@ import axios from "axios"
 import config from "../../config"
 import PaymentModal from "../payment/PaymentModal"
 import CardShape from "../../components/payment/CardShape"
-import { BillingStatus } from "../../components/types"
+import { BillingStatus, SubscriptionInfo } from "../../components/types"
 import { useAuth } from "../../components/AuthContext"
+import { usePlanTypeInfo } from "../../components/payment/PlanTypeInfo"
 
 interface UserProfile {
     username: string
     email: string
-}
-
-interface SubscriptionInfo {
-    isExist: boolean
-    isSubscribe: boolean
-    cardLastNumber: string
-    endAt: string
-    planType: string
-    status: BillingStatus
-    nextPaymentDate?: string
-    isRefundable?: boolean
 }
 
 type SettingsTab = "profile" | "subscription"
@@ -56,6 +46,7 @@ const SettingsPage: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false)
 
     const { username, email, isAuthenticated, authLoading } = useAuth()
+    const { data: planTypeInfo } = usePlanTypeInfo(true)
 
     useEffect(() => {
         setIsLoading(true)
@@ -478,9 +469,9 @@ const SettingsPage: React.FC = () => {
                     <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                         <div className="flex items-center">
                             <CreditCard className="h-5 w-5 text-gray-500 mr-2" />
-                            <span>결제 금액</span>
+                            <span>결제 예정 금액</span>
                         </div>
-                        <span className="font-medium">{planType === "연간" ? "₩7,900/월 (연 ₩94,800)" : "₩9,900/월"}</span>
+                        <span className="font-medium">{planType === "연간" ? `₩${planTypeInfo?.annual.price.toLocaleString()}/연` : `₩${planTypeInfo?.monthly.price.toLocaleString()}/월`}</span>
                     </div>
                 </div>
 

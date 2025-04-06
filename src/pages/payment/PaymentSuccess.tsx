@@ -45,9 +45,6 @@ const PaymentSuccessPage: React.FC = () => {
 
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                <span className="font-medium">주문 번호:</span> SLU-{Math.floor(Math.random() * 1000000)}
-              </p>
-              <p className="text-sm text-blue-800 dark:text-blue-300">
                 <span className="font-medium">결제 확인 이메일이 발송되었습니다.</span>
               </p>
             </div>
