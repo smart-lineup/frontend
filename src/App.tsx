@@ -7,7 +7,7 @@ import FindIdPage from './pages/login/FindIdPage';
 import FindPasswordPage from './pages/login/FindPasswordPage';
 import ChangePasswordPage from './pages/login/ChangePasswordPage';
 import HomePage from './pages/HomePage';
-import LinePage from './pages/LinePage';
+import LinePage from './pages/line/LinePage';
 import { DarkModeProvider } from './components/DarkModeContext';
 import AttendeeInputPage from './pages/AttendeeInputPage';
 import { AuthProvider } from './components/AuthContext';

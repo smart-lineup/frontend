@@ -5,6 +5,7 @@ import config from '../config';
 type AuthContextType = {
     username: string | null;
     email: string | null;
+    role: string | null;
     isAuthenticated: boolean;
     fetchUser: () => Promise<void>;
     logout: () => Promise<void>;
@@ -14,6 +15,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
     username: null,
     email: null,
+    role: null,
     isAuthenticated: false,
     fetchUser: () => Promise.resolve(),
     logout: () => Promise.resolve(),
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [username, setUsername] = useState<string | null>(null);
     const [email, setEmail] = useState<string | null>(null);
+    const [role, setRole] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
 
@@ -35,17 +38,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!response.data || response.data == "login yet") {
                 setUsername(null);
                 setEmail(null);
+                setRole(null);
                 setIsAuthenticated(false);
                 return;
             };
 
-            const [username, email] = response.data.split(":");
+            const [username, email, role] = response.data.split(":");
             setUsername(username);
             setEmail(email);
+            setRole(role);
             setIsAuthenticated(true);
         } catch (error) {
             setUsername(null);
             setEmail(null);
+            setRole(null);
             setIsAuthenticated(false);
             console.error("Error fetching user:", error);
             return;
@@ -69,7 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
     return (
-        <AuthContext.Provider value={{ username, email, isAuthenticated, fetchUser, logout, authLoading }}>
+        <AuthContext.Provider value={{ username, email, role, isAuthenticated, fetchUser, logout, authLoading }}>
             {children}
         </AuthContext.Provider>
     )

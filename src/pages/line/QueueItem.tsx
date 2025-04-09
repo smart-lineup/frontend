@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { User, Clock, Check, Clock3, Trash2, GripVertical, ChevronDown, ChevronUp, Edit } from "lucide-react"
-import { type Queue, QueueStatus } from "../types"
+import { type Queue, QueueStatus } from "../../components/types"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useState } from "react"
