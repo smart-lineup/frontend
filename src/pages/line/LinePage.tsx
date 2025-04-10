@@ -3,7 +3,6 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import axios from "axios"
-import { Plus } from "lucide-react"
 import { useDarkMode } from "../../components/DarkModeContext"
 import { type Line, type Queue, QueueStatus, type Attendee } from "../../components/types"
 import config from "../../config"
@@ -11,10 +10,18 @@ import type { DragEndEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { read, utils, writeFileXLSX } from "xlsx"
 import { useNavigate } from "react-router-dom"
-import * as Tooltip from "@radix-ui/react-Tooltip"
 
 import Navbar from "../../components/Navbar"
-import { LineSidebar, LineHeader, QRCodeModal, AttendeeForm, ExcelUploadModal, QueueList, EmptyState } from "../line"
+import {
+  LineSidebar,
+  LineHeader,
+  QRCodeModal,
+  AttendeeForm,
+  ExcelUploadModal,
+  QueueList,
+  EmptyState,
+  LimitModal,
+} from "../line"
 import { useAuth } from "../../components/AuthContext"
 
 const LinePage: React.FC = () => {
@@ -33,6 +40,11 @@ const LinePage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [editingAttendee, setEditingAttendee] = useState<{ queueId: number; attendee: Attendee } | null>(null)
+  const [limitModal, setLimitModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+  })
 
   const { username, isAuthenticated, authLoading, role } = useAuth()
   const navigate = useNavigate()
@@ -83,7 +95,22 @@ const LinePage: React.FC = () => {
     }
   }
 
+  // 라인 추가 제한 모달 표시 함수
+  const handleAddLineClick = () => {
+    if (role === "FREE" && lines.length >= 2) {
+      setLimitModal({
+        isOpen: true,
+        title: "라인 개수 제한",
+        message:
+          "무료 계정은 최대 2개의 라인만 관리할 수 있습니다. 프리미엄으로 업그레이드하여 무제한으로 라인을 관리하세요.",
+      })
+      return true
+    }
+    return false
+  }
+
   const handleAddLine = async (name: string) => {
+    // 제한 체크는 LineSidebar에서 이미 수행됨
     try {
       await axios.post(
         config.backend + "/line/add",
@@ -172,6 +199,18 @@ const LinePage: React.FC = () => {
   const handleAddAttendee = async (phone: string, name: string, infoFields: { key: string; value: string }[]) => {
     if (!selectedLine) return
 
+    // FREE 사용자이고 이미 20명 이상의 대기자가 있는 경우 제한
+    if (role === "FREE" && queues.length >= 20) {
+      setLimitModal({
+        isOpen: true,
+        title: "대기자 수 제한",
+        message:
+          "최대 20명까지만 참여할 수 있습니다. 현재 정원이 가득 찼어요. 프리미엄으로 업그레이드하여 무제한으로 대기자를 관리하세요.",
+      })
+      setShowAddAttendee(false)
+      return
+    }
+
     try {
       const infoObj = prepareInfoObject(infoFields)
 
@@ -223,6 +262,21 @@ const LinePage: React.FC = () => {
       console.error("Error updating attendee:", e)
       setError("대기자 정보 수정에 실패했습니다.")
     }
+  }
+
+  const handleExcelUploadClick = () => {
+    // FREE 사용자인 경우 제한 모달 표시
+    if (role === "FREE") {
+      setLimitModal({
+        isOpen: true,
+        title: "엑셀 업로드 제한",
+        message: "엑셀 업로드는 프리미엄 기능입니다. 프리미엄으로 업그레이드하여 이 기능을 사용하세요.",
+      })
+      return
+    }
+
+    // PREMIUM 사용자인 경우 파일 선택 다이얼로그 표시
+    fileInputRef.current?.click()
   }
 
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,6 +334,17 @@ const LinePage: React.FC = () => {
   const handleConfirmExcelUpload = async () => {
     if (!selectedLine || excelData.length === 0) return
 
+    // FREE 사용자이고 현재 대기자 수 + 추가할 대기자 수가 20명을 초과하는 경우 제한
+    if (role === "FREE" && queues.length + excelData.length > 20) {
+      setLimitModal({
+        isOpen: true,
+        title: "대기자 수 제한",
+        message: `무료 계정은 최대 20명의 대기자만 관리할 수 있습니다. 현재 ${queues.length}명이 있으며, ${excelData.length}명을 추가하면 제한을 초과합니다.`,
+      })
+      setShowExcelUpload(false)
+      return
+    }
+
     setIsUploading(true)
     try {
       // Batch upload attendees
@@ -306,6 +371,16 @@ const LinePage: React.FC = () => {
   }
 
   const handleExcelDownload = () => {
+    // FREE 사용자인 경우 제한
+    if (role === "FREE") {
+      setLimitModal({
+        isOpen: true,
+        title: "엑셀 다운로드 제한",
+        message: "엑셀 다운로드는 프리미엄 기능입니다. 프리미엄으로 업그레이드하여 이 기능을 사용하세요.",
+      })
+      return
+    }
+
     if (!queues.length || !selectedLine) {
       alert("다운로드할 대기열 데이터가 없습니다.")
       return
@@ -481,8 +556,24 @@ const LinePage: React.FC = () => {
     setEditingAttendee(null)
   }
 
-  const handleExcelUploadClick = () => {
-    fileInputRef.current?.click()
+  const handleUpgrade = () => {
+    navigate("/pricing")
+  }
+
+  // 대기자 추가 버튼 클릭 핸들러
+  const handleAddAttendeeClick = () => {
+    // FREE 사용자이고 이미 20명 이상의 대기자가 있는 경우 제한
+    if (role === "FREE" && queues.length >= 20) {
+      setLimitModal({
+        isOpen: true,
+        title: "대기자 수 제한",
+        message:
+          "최대 20명까지만 참여할 수 있습니다. 현재 정원이 가득 찼어요. 프리미엄으로 업그레이드하여 무제한으로 대기자를 관리하세요.",
+      })
+      return
+    }
+
+    setShowAddAttendee(true)
   }
 
   return (
@@ -511,6 +602,15 @@ const LinePage: React.FC = () => {
               onDeleteLine={handleDeleteLine}
               onAddLine={handleAddLine}
               onEditLine={handleEditLine}
+              onAddLineClick={() => {
+                setLimitModal({
+                  isOpen: true,
+                  title: "라인 개수 제한",
+                  message:
+                    "무료 계정은 최대 2개의 라인만 관리할 수 있습니다. 프리미엄으로 업그레이드하여 무제한으로 라인을 관리하세요.",
+                })
+              }}
+              role={role || "FREE"}
             />
 
             {/* Main Content */}
@@ -529,6 +629,10 @@ const LinePage: React.FC = () => {
                     onToggleQRCode={toggleQRCode}
                     onExcelDownload={handleExcelDownload}
                     onExcelUpload={handleExcelUploadClick}
+                    onAddAttendee={handleAddAttendeeClick}
+                    fileInputRef={fileInputRef}
+                    handleExcelUpload={handleExcelUpload}
+                    role={role || "FREE"}
                   />
 
                   {showQRCode && <QRCodeModal shareUrl={shareUrl} onClose={toggleQRCode} />}
@@ -555,58 +659,6 @@ const LinePage: React.FC = () => {
                     />
                   )}
 
-                  {/* Add Attendee Button */}
-                  {!showAddAttendee && !showExcelUpload && (
-                    <div className="mb-6 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setShowAddAttendee(true)}
-                        className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Plus size={18} />
-                        대기자 추가
-                      </button>
-                      <div className="flex-1 relative sm:block hidden">
-                        <Tooltip.Provider delayDuration={300}>
-                          <Tooltip.Root>
-                            <Tooltip.Trigger asChild>
-                              <button
-                                onClick={handleExcelUploadClick}
-                                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 relative"
-                              >
-                                <input
-                                  type="file"
-                                  ref={fileInputRef}
-                                  onChange={handleExcelUpload}
-                                  accept=".xlsx,.xls"
-                                  className="hidden"
-                                />
-                                엑셀 업로드
-                              </button>
-                            </Tooltip.Trigger>
-                            <Tooltip.Portal>
-                              <Tooltip.Content
-                                className="z-50 max-w-xs p-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg"
-                                sideOffset={5}
-                                side="top"
-                                align="center"
-                                alignOffset={0}
-                                avoidCollisions
-                              >
-                                <div className="font-semibold mb-1">엑셀 파일 형식 안내:</div>
-                                <ul className="list-disc pl-4 space-y-1">
-                                  <li>첫 번째 행은 열 제목이어야 합니다.</li>
-                                  <li>첫번째 열:&nbsp;'이름', &nbsp;두번째 열:&nbsp;'전화번호'</li>
-                                  <li>그 외 열은 추가 정보로 자동 저장됩니다.</li>
-                                </ul>
-                                <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
-                              </Tooltip.Content>
-                            </Tooltip.Portal>
-                          </Tooltip.Root>
-                        </Tooltip.Provider>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Queue List */}
                   <QueueList
                     queues={queues}
@@ -623,6 +675,13 @@ const LinePage: React.FC = () => {
             </div>
           </div>
         </div>
+        <LimitModal
+          isOpen={limitModal.isOpen}
+          onClose={() => setLimitModal({ ...limitModal, isOpen: false })}
+          title={limitModal.title}
+          message={limitModal.message}
+          onUpgrade={handleUpgrade}
+        />
       </div>
     </div>
   )

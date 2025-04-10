@@ -17,7 +17,7 @@ const PaymentSuccessPage: React.FC = () => {
         if (prev <= 1) {
           clearInterval(timer)
           // 카운트다운이 끝나면 라인 관리 페이지로 리다이렉트
-          navigate("/line")
+          window.location.href = "/line"
           return 0
         }
         return prev - 1
@@ -50,13 +50,13 @@ const PaymentSuccessPage: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <Link
-                to="/line"
+              <button
+                onClick={() => (window.location.href = "/line")}
                 className="block w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors duration-200 flex items-center justify-center"
               >
                 라인 관리로 이동
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+              </button>
 
               <p className="text-sm text-gray-500 dark:text-gray-400">{countdown}초 후 자동으로 이동합니다...</p>
             </div>

@@ -14,6 +14,8 @@ interface LineSidebarProps {
     onDeleteLine: (id: number) => void
     onAddLine: (name: string) => void
     onEditLine: (id: number, name: string) => void
+    onAddLineClick: () => void // 새로 추가된 prop
+    role: string // 새로 추가된 prop
 }
 
 const LineSidebar: React.FC<LineSidebarProps> = ({
@@ -25,6 +27,8 @@ const LineSidebar: React.FC<LineSidebarProps> = ({
     onDeleteLine,
     onAddLine,
     onEditLine,
+    onAddLineClick, // 새로 추가된 prop
+    role, // 새로 추가된 prop
 }) => {
     const [showAddLine, setShowAddLine] = useState(false)
     const [newLineName, setNewLineName] = useState("")
@@ -43,6 +47,17 @@ const LineSidebar: React.FC<LineSidebarProps> = ({
         setEditingLine(null)
     }
 
+    const handleAddLineButtonClick = () => {
+        // FREE 사용자이고 이미 2개 이상의 라인이 있는 경우 제한 모달 표시
+        if (role === "FREE" && lines.length >= 2) {
+            onAddLineClick() // 제한 모달 표시 함수 호출
+            return
+        }
+
+        // 그렇지 않으면 라인 추가 폼 표시
+        setShowAddLine(true)
+    }
+
     return (
         <div className="w-full md:w-64 flex-shrink-0">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-4">
@@ -52,7 +67,7 @@ const LineSidebar: React.FC<LineSidebarProps> = ({
                         라인 목록
                     </h2>
                     <button
-                        onClick={() => setShowAddLine(true)}
+                        onClick={handleAddLineButtonClick} // 수정된 부분
                         className="p-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors"
                     >
                         <Plus size={16} />

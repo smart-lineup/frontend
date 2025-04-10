@@ -180,8 +180,8 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
               <Clock size={12} className="flex-shrink-0" />
               {formatDate(queue.createdAt)} 등록
             </div>
-            {queue.previousId && <div className="whitespace-nowrap truncate">이전: #{queue.previousId}</div>}
-            {queue.nextId && <div className="whitespace-nowrap truncate">다음: #{queue.nextId}</div>}
+            {/* {queue.previousId && <div className="whitespace-nowrap truncate">이전: #{queue.previousId}</div>}
+            {queue.nextId && <div className="whitespace-nowrap truncate">다음: #{queue.nextId}</div>} */}
           </div>
           <div className="flex items-center mt-1 md:mt-0">
             <span className="mr-1">상세 정보</span>

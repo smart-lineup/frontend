@@ -41,7 +41,7 @@ const PaymentProcessing = () => {
                         withCredentials: true
                     });
                 }
-                
+
                 await axios.post(config.backend + '/payment/pay', {}, {
                     withCredentials: true
                 });
@@ -53,6 +53,9 @@ const PaymentProcessing = () => {
             }
         }
         process();
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
     }, []);
 
     return (

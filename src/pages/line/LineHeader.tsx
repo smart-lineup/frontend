@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-import { ArrowLeft, MoveVertical, Share2, QrCode, FileDown, FileUp } from "lucide-react"
+import { ArrowLeft, MoveVertical, Share2, QrCode, FileDown, FileUp, Plus } from "lucide-react"
 import type { Line } from "../../components/types"
+import * as Tooltip from "@radix-ui/react-Tooltip"
 
 interface LineHeaderProps {
     selectedLine: Line
@@ -13,6 +14,10 @@ interface LineHeaderProps {
     onToggleQRCode: () => void
     onExcelDownload: () => void
     onExcelUpload: () => void
+    onAddAttendee: () => void
+    fileInputRef: React.RefObject<HTMLInputElement | null>
+    handleExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
+    role: string
 }
 
 const LineHeader: React.FC<LineHeaderProps> = ({
@@ -24,7 +29,13 @@ const LineHeader: React.FC<LineHeaderProps> = ({
     onToggleQRCode,
     onExcelDownload,
     onExcelUpload,
+    onAddAttendee,
+    fileInputRef,
+    handleExcelUpload,
+    role,
 }) => {
+    const isPremium = role === "PREMIUM"
+
     return (
         <div className="flex flex-col mb-6 gap-3 md:gap-4">
             <div className="flex items-center w-full">
@@ -48,7 +59,14 @@ const LineHeader: React.FC<LineHeaderProps> = ({
                         }`}
                 >
                     <MoveVertical size={16} />
-                    <span className="whitespace-nowrap text-xs">{isDraggable ? "변경 완료" : "순서 변경"}</span>
+                    <span className="whitespace-nowrap text-xs">{isDraggable ? "순서 저장" : "순서 변경"}</span>
+                </button>
+                <button
+                    onClick={onAddAttendee}
+                    className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                >
+                    <Plus size={16} />
+                    <span className="whitespace-nowrap text-xs">대기자 추가</span>
                 </button>
                 <button
                     onClick={onShare}
@@ -64,20 +82,86 @@ const LineHeader: React.FC<LineHeaderProps> = ({
                     <QrCode size={16} />
                     <span className="whitespace-nowrap text-xs">QR</span>
                 </button>
-                <button
-                    onClick={onExcelDownload}
-                    className="flex items-center gap-1 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
-                >
-                    <FileDown size={16} />
-                    <span className="whitespace-nowrap text-xs">엑셀 다운로드</span>
-                </button>
-                <button
-                    onClick={onExcelUpload}
-                    className="flex items-center gap-1 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-                >
-                    <FileUp size={16} />
-                    <span className="whitespace-nowrap text-xs">엑셀 업로드</span>
-                </button>
+
+                {/* 엑셀 다운로드 버튼에 툴팁 추가 */}
+                <Tooltip.Provider delayDuration={300}>
+                    <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                            <button
+                                onClick={onExcelDownload}
+                                className={`flex items-center gap-1 px-3 py-2 ${isPremium ? "bg-indigo-500 hover:bg-indigo-600" : "bg-indigo-300 cursor-not-allowed"
+                                    } text-white rounded-lg transition-colors`}
+                            >
+                                <FileDown size={16} />
+                                <span className="whitespace-nowrap text-xs">엑셀 다운로드</span>
+                            </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                            <Tooltip.Content
+                                className="z-50 max-w-xs p-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg"
+                                sideOffset={5}
+                                side="top"
+                                align="center"
+                                alignOffset={0}
+                                avoidCollisions
+                            >
+                                {isPremium ? (
+                                    <div className="font-semibold">현재 대기열의 모든 정보를 엑셀 파일로 다운로드합니다.</div>
+                                ) : (
+                                    <div className="font-semibold">프리미엄 기능입니다. 업그레이드하여 사용하세요.</div>
+                                )}
+                                <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
+                            </Tooltip.Content>
+                        </Tooltip.Portal>
+                    </Tooltip.Root>
+                </Tooltip.Provider>
+
+                {/* 엑셀 업로드 버튼 */}
+                <Tooltip.Provider delayDuration={300}>
+                    <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                            <button
+                                onClick={onExcelUpload}
+                                className={`flex items-center gap-1 px-3 py-2 ${isPremium ? "bg-green-500 hover:bg-green-600" : "bg-green-300 cursor-not-allowed"
+                                    } text-white rounded-lg transition-colors`}
+                            >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleExcelUpload}
+                                    accept=".xlsx,.xls"
+                                    className="hidden"
+                                />
+                                <FileUp size={16} />
+                                <span className="whitespace-nowrap text-xs">엑셀 업로드</span>
+                            </button>
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                            <Tooltip.Content
+                                className="z-50 max-w-xs p-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg"
+                                sideOffset={5}
+                                side="top"
+                                align="center"
+                                alignOffset={0}
+                                avoidCollisions
+                            >
+                                {isPremium ? (
+                                    <>
+                                        <div className="font-semibold mb-1">엑셀 파일 형식 안내:</div>
+                                        <ul className="list-disc pl-4 space-y-1">
+                                            <li>첫 번째 행은 열 제목이어야 합니다.</li>
+                                            <li>첫번째 열:&nbsp;'이름', &nbsp;두번째 열:&nbsp;'전화번호'</li>
+                                            <li>그 외 열은 추가 정보로 자동 저장됩니다.</li>
+                                        </ul>
+                                    </>
+                                ) : (
+                                    <div className="font-semibold">프리미엄 기능입니다. 업그레이드하여 사용하세요.</div>
+                                )}
+                                <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
+                            </Tooltip.Content>
+                        </Tooltip.Portal>
+                    </Tooltip.Root>
+                </Tooltip.Provider>
             </div>
         </div>
     )

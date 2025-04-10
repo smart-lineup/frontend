@@ -1,42 +1,52 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import { Sun, Moon, Settings, LogIn, Menu, X } from 'lucide-react';
-import { useDarkMode } from './DarkModeContext';
+"use client"
+
+import type React from "react"
+import { useState, useEffect, useRef } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from "./AuthContext"
+import { Sun, Moon, Settings, LogIn, Menu, X, CreditCard } from "lucide-react"
+import { useDarkMode } from "./DarkModeContext"
 
 const Navbar: React.FC = () => {
-    const { darkMode, toggleDarkMode } = useDarkMode();
-    const navigate = useNavigate();
-    const { username, isAuthenticated, logout } = useAuth();
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const buttonRef = useRef<HTMLButtonElement>(null);
+    const { darkMode, toggleDarkMode } = useDarkMode()
+    const navigate = useNavigate()
+    const { username, isAuthenticated, logout, role } = useAuth()
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
+
+    const isPremium = role === "PREMIUM"
 
     const handleGoToManage = () => {
-        navigate('/line');
-        setIsMobileMenuOpen(false);
-    };
+        navigate("/line")
+        setIsMobileMenuOpen(false)
+    }
 
     const handleGoToLogin = () => {
-        navigate('/login');
-        setIsMobileMenuOpen(false);
-    };
+        navigate("/login")
+        setIsMobileMenuOpen(false)
+    }
+
+    const handleGoToPricing = () => {
+        navigate("/pricing")
+        setIsMobileMenuOpen(false)
+    }
 
     const handleLogout = async () => {
-        await logout();
-        setIsDropdownOpen(false);
-        setIsMobileMenuOpen(false);
-        navigate('/');
-    };
+        await logout()
+        setIsDropdownOpen(false)
+        setIsMobileMenuOpen(false)
+        navigate("/")
+    }
 
     const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
+        setIsDropdownOpen(!isDropdownOpen)
+    }
 
     const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
-    };
+        setIsMobileMenuOpen(!isMobileMenuOpen)
+    }
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -46,19 +56,23 @@ const Navbar: React.FC = () => {
                 buttonRef.current &&
                 !buttonRef.current.contains(event.target as Node)
             ) {
-                setIsDropdownOpen(false);
+                setIsDropdownOpen(false)
             }
-        };
+        }
 
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener("mousedown", handleClickOutside)
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+            document.removeEventListener("mousedown", handleClickOutside)
+        }
+    }, [])
 
     return (
         <header className="bg-white dark:bg-gray-800 shadow h-16 flex items-center justify-between px-4 md:px-6 transition-colors duration-200">
-            <div className="text-lg md:text-xl font-bold dark:text-white">Smart Line Up</div>
+            <div className="text-lg md:text-xl font-bold dark:text-white">
+                <Link to="/">
+                    Smart Line Up
+                </Link>
+            </div>
 
             {/* Mobile menu button */}
             <button
@@ -99,6 +113,17 @@ const Navbar: React.FC = () => {
                     </button>
                 )}
 
+                {/* Subscribe button - only when authenticated and not premium */}
+                {isAuthenticated && !isPremium && (
+                    <button
+                        onClick={handleGoToPricing}
+                        className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
+                    >
+                        <CreditCard size={16} className="mr-1" />
+                        <span>구독하기</span>
+                    </button>
+                )}
+
                 {/* Login button - only when not authenticated */}
                 {!isAuthenticated && (
                     <button
@@ -133,21 +158,33 @@ const Navbar: React.FC = () => {
                             <div
                                 ref={dropdownRef}
                                 className="absolute right-0 mt-2 w-48 bg-white divide-y divide-gray-100 rounded-md shadow-lg dark:bg-gray-700 dark:divide-gray-600 z-50"
-                                style={{ top: '100%' }}
+                                style={{ top: "100%" }}
                             >
                                 <div className="px-4 py-3 text-sm text-gray-900 dark:text-white" role="none">
                                     <div className="font-medium truncate">{username}</div>
+                                    {isPremium && <div className="text-xs mt-1 text-green-600 dark:text-green-400">프리미엄 구독자</div>}
                                 </div>
                                 <ul className="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-user-button">
                                     <li>
-                                        <a
-                                            href="/settings"
+                                        <Link
+                                            to="/settings?tab=profile"
                                             className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                             role="menuitem"
                                         >
-                                            설정
-                                        </a>
+                                            계정 설정
+                                        </Link>
                                     </li>
+                                    {!isPremium && (
+                                        <li>
+                                            <Link
+                                                to="/pricing"
+                                                className="block px-4 py-2 text-green-600 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-green-700 dark:hover:text-green-300"
+                                                role="menuitem"
+                                            >
+                                                프리미엄으로 업그레이드
+                                            </Link>
+                                        </li>
+                                    )}
                                     <li>
                                         <button
                                             onClick={handleLogout}
@@ -192,6 +229,17 @@ const Navbar: React.FC = () => {
                             </button>
                         )}
 
+                        {/* Subscribe button - only when authenticated and not premium */}
+                        {isAuthenticated && !isPremium && (
+                            <button
+                                onClick={handleGoToPricing}
+                                className="flex items-center justify-between px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                            >
+                                <span>구독하기</span>
+                                <CreditCard size={16} />
+                            </button>
+                        )}
+
                         {/* Login button - only when not authenticated */}
                         {!isAuthenticated && (
                             <button
@@ -212,14 +260,25 @@ const Navbar: React.FC = () => {
                                         src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
                                         alt="user photo"
                                     />
-                                    <div className="font-medium truncate">{username}</div>
+                                    <div>
+                                        <div className="font-medium truncate">{username}</div>
+                                        {isPremium && <div className="text-xs text-green-600 dark:text-green-400">프리미엄 구독자</div>}
+                                    </div>
                                 </div>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/settings?tab=profile"
                                     className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
                                 >
-                                    설정
-                                </a>
+                                    계정 설정
+                                </Link>
+                                {!isPremium && (
+                                    <Link
+                                        to="/pricing"
+                                        className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400"
+                                    >
+                                        프리미엄으로 업그레이드
+                                    </Link>
+                                )}
                                 <button
                                     onClick={handleLogout}
                                     className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-left"
@@ -232,7 +291,7 @@ const Navbar: React.FC = () => {
                 </div>
             )}
         </header>
-    );
-};
+    )
+}
 
-export default Navbar;
+export default Navbar
