@@ -1,21 +1,29 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, X, CreditCard, ArrowRight, ArrowLeft } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useDarkMode } from "../../components/DarkModeContext"
 import { useAuth } from "../../components/AuthContext"
 import { usePlanTypeInfo } from "../../components/payment/PlanTypeInfo"
 
+
 const PricingPage: React.FC = () => {
     const { darkMode } = useDarkMode()
     const [isAnnual, setIsAnnual] = useState(true)
     const navigate = useNavigate()
-    const { isAuthenticated } = useAuth()
     const { premiumPrice, annualSaving } = usePlanTypeInfo(isAnnual)
+    const { username, isAuthenticated, authLoading, role } = useAuth()
 
     const paymentUrl = `/payment?plan=${isAnnual ? "annual" : "monthly"}`
+
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            alert("로그인이 필요합니다.")
+            navigate("/login")
+        }
+    }, [authLoading, isAuthenticated])
 
     return (
         <div className={darkMode ? "dark" : ""}>
@@ -37,8 +45,8 @@ const PricingPage: React.FC = () => {
                             <button
                                 onClick={() => setIsAnnual(false)}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${!isAnnual
-                                        ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
-                                        : "text-gray-600 dark:text-gray-400"
+                                    ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                                    : "text-gray-600 dark:text-gray-400"
                                     }`}
                             >
                                 월간 결제
@@ -46,8 +54,8 @@ const PricingPage: React.FC = () => {
                             <button
                                 onClick={() => setIsAnnual(true)}
                                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${isAnnual
-                                        ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
-                                        : "text-gray-600 dark:text-gray-400"
+                                    ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                                    : "text-gray-600 dark:text-gray-400"
                                     }`}
                             >
                                 연간 결제

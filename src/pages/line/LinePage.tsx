@@ -54,7 +54,7 @@ const LinePage: React.FC = () => {
       alert("로그인이 필요합니다.")
       navigate("/")
     }
-  }, [authLoading, isAuthenticated, navigate])
+  }, [authLoading, isAuthenticated])
 
   // Fetch all lines on page load
   useEffect(() => {

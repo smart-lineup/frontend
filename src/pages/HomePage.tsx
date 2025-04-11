@@ -8,6 +8,10 @@ import { ArrowRight, CheckCircle, Users, Clock, BarChart3, Shield, ChevronRight 
 import Navbar from "../components/Navbar"
 import { useDarkMode } from "../components/DarkModeContext"
 import linePageImage from "../assets/images/line-page.png"
+import restaurantImage from "../assets/images/restaurant.png"
+import hospitalImage from "../assets/images/hospital.png"
+import storeImage from "../assets/images/store.png"
+import Footer from "../components/Footer"
 
 export default function HomePage() {
     const { darkMode } = useDarkMode()
@@ -21,7 +25,7 @@ export default function HomePage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        navigate(`/signup?email=${encodeURIComponent(email)}`)
+        navigate(`/login`)
     }
 
     const handleGetStarted = () => {
@@ -92,24 +96,24 @@ export default function HomePage() {
                 </section>
 
                 {/* Stats Section */}
-                <section className="py-16 bg-white dark:bg-gray-900">
+                {/* <section className="py-16 bg-white dark:bg-gray-900">
                     <div className="container mx-auto px-4">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                             <div className="p-6">
                                 <p className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400">
-                                    1+
+                                    500+
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-400 mt-2">비즈니스 사용자</p>
                             </div>
                             <div className="p-6">
                                 <p className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400">
-                                    1+
+                                    50K+
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-400 mt-2">월간 대기열</p>
                             </div>
                             <div className="p-6">
                                 <p className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400">
-                                    10%
+                                    30%
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-400 mt-2">대기 시간 감소</p>
                             </div>
@@ -118,6 +122,35 @@ export default function HomePage() {
                                     99%
                                 </p>
                                 <p className="text-gray-600 dark:text-gray-400 mt-2">고객 만족도</p>
+                            </div>
+                        </div>
+                    </div>
+                </section> */}
+
+                {/* Beta Test Notice */}
+                <section className="py-16 bg-white dark:bg-gray-900">
+                    <div className="container mx-auto px-4">
+                        <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/30 dark:to-sky-900/30 rounded-2xl p-8 border border-blue-100 dark:border-blue-800 shadow-lg">
+                            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-8 w-8 text-white"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <div className="text-center md:text-left">
+                                    <h3 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-sky-600 dark:from-blue-400 dark:to-sky-400">
+                                        베타테스트 진행 중
+                                    </h3>
+                                    <p className="text-lg text-gray-700 dark:text-gray-300">
+                                        베타테스트는 모든 기능을 실제 서비스 전까지 모두 사용가능합니다.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,9 +185,9 @@ export default function HomePage() {
                                 <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-sky-500/20 dark:shadow-sky-900/20">
                                     <Clock className="h-8 w-8 text-white" />
                                 </div>
-                                <h3 className="text-xl font-bold mb-3">자동화된 알림</h3>
+                                <h3 className="text-xl font-bold mb-3">빠른 지원</h3>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    고객에게 자동으로 대기 상태 알림을 보내세요. 고객은 언제든지 자신의 순서를 확인할 수 있습니다.
+                                    필요한 기능을 빠르게 요청하여 사용해보세요.
                                 </p>
                             </div>
 
@@ -220,7 +253,7 @@ export default function HomePage() {
                                 </div>
                                 <h3 className="text-xl font-bold mb-3">커스터마이징</h3>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    비즈니스 요구에 맞게 대기열을 커스터마이징하세요. 다양한 설정 옵션을 제공합니다.
+                                    비즈니스 요구에 맞게 대기열에 메모를 제공합니다. 메모를 통해 고객의 요구사항을 충족시키세요.
                                 </p>
                             </div>
                         </div>
@@ -246,7 +279,7 @@ export default function HomePage() {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
                                 <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-lg overflow-hidden">
                                     <img
-                                        src="/placeholder.svg?height=200&width=400"
+                                        src={restaurantImage}
                                         alt="레스토랑"
                                         className="w-full h-48 object-cover"
                                     />
@@ -255,13 +288,6 @@ export default function HomePage() {
                                         <p className="text-gray-600 dark:text-gray-400 mb-4">
                                             고객 대기열을 효율적으로 관리하고 테이블 회전율을 높이세요.
                                         </p>
-                                        <a
-                                            href="#"
-                                            className="text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center"
-                                        >
-                                            자세히 보기
-                                            <ChevronRight className="ml-1 h-4 w-4" />
-                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -269,19 +295,12 @@ export default function HomePage() {
                             <div className="relative group">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
                                 <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-lg overflow-hidden">
-                                    <img src="/placeholder.svg?height=200&width=400" alt="병원" className="w-full h-48 object-cover" />
+                                    <img src={hospitalImage} alt="병원" className="w-full h-48 object-cover" />
                                     <div className="p-6">
                                         <h3 className="text-xl font-bold mb-2">병원 및 클리닉</h3>
                                         <p className="text-gray-600 dark:text-gray-400 mb-4">
                                             환자 대기 시간을 줄이고 의료 서비스 효율성을 높이세요.
                                         </p>
-                                        <a
-                                            href="#"
-                                            className="text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center"
-                                        >
-                                            자세히 보기
-                                            <ChevronRight className="ml-1 h-4 w-4" />
-                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -289,19 +308,12 @@ export default function HomePage() {
                             <div className="relative group">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-sky-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-300"></div>
                                 <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-lg overflow-hidden">
-                                    <img src="/placeholder.svg?height=200&width=400" alt="소매점" className="w-full h-48 object-cover" />
+                                    <img src={storeImage} alt="소매점" className="w-full h-48 object-cover" />
                                     <div className="p-6">
                                         <h3 className="text-xl font-bold mb-2">소매점</h3>
                                         <p className="text-gray-600 dark:text-gray-400 mb-4">
                                             고객 흐름을 최적화하고 쇼핑 경험을 향상시키세요.
                                         </p>
-                                        <a
-                                            href="#"
-                                            className="text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center"
-                                        >
-                                            자세히 보기
-                                            <ChevronRight className="ml-1 h-4 w-4" />
-                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -422,17 +434,10 @@ export default function HomePage() {
                         <div className="max-w-3xl mx-auto text-center">
                             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">지금 바로 시작하세요</h2>
                             <p className="text-xl text-blue-100 mb-8">
-                                Smart Line Up으로 대기열 관리를 더 효율적으로 만들어보세요. 질문이 있으시면 언제든지 문의해 주세요.
+                                Smart Line Up으로 대기열 관리를 더 효율적으로 만들어보세요. <br/>
+                                질문이 있으시면 언제든지 문의해 주세요.
                             </p>
-                            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 mb-8">
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="이메일 주소를 입력하세요"
-                                    className="flex-1 px-4 py-3 rounded-xl text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-600"
-                                    required
-                                />
+                            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
                                 <button
                                     type="submit"
                                     className="px-6 py-3 bg-white hover:bg-gray-100 text-blue-600 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center shadow-lg"
@@ -446,121 +451,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* Footer */}
-                <footer className="bg-white dark:bg-gray-900 py-12 border-t border-gray-200 dark:border-gray-800">
-                    <div className="container mx-auto px-4">
-                        <div className="grid md:grid-cols-4 gap-8">
-                            <div>
-                                <h3 className="text-lg font-bold mb-4">Smart Line Up</h3>
-                                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                                    효율적인 대기열 관리 솔루션으로 비즈니스 성장을 돕습니다.
-                                </p>
-                                <div className="flex space-x-4">
-                                    <a href="#" className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
-                                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path>
-                                        </svg>
-                                    </a>
-                                    <a href="#" className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
-                                        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path>
-                                        </svg>
-                                    </a>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold mb-4">제품</h3>
-                                <ul className="space-y-2">
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            기능
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            요금제
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            FAQ
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold mb-4">회사</h3>
-                                <ul className="space-y-2">
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            소개
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            블로그
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            채용
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold mb-4">지원</h3>
-                                <ul className="space-y-2">
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            고객센터
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            문의하기
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a
-                                            href="#"
-                                            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                        >
-                                            개인정보처리방침
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
-                            <p>&copy; 2023 Smart Line Up. All rights reserved.</p>
-                        </div>
-                    </div>
-                </footer>
+                <Footer />
             </div>
         </div>
     )

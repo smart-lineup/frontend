@@ -33,7 +33,7 @@ const PaymentPage: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false)
     const [tossPayment, setTossPayment] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
-    const { username, email } = useAuth()
+    const { username, email, isAuthenticated, authLoading } = useAuth()
     const [showCardModal, setShowCardModal] = useState(false)
     const [cardModalLoading, setCardModalLoading] = useState(false)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -47,6 +47,13 @@ const PaymentPage: React.FC = () => {
         message: "",
         type: "info" as "success" | "error" | "warning" | "info",
     })
+
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            alert("로그인이 필요합니다.")
+            navigate("/login")
+        }
+    }, [authLoading, isAuthenticated])
 
     // 요금제 변경 시 URL도 업데이트
     const updatePlanInUrl = (isAnnual: boolean) => {
