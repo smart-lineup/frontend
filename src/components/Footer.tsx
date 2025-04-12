@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "../assets/images/logo.png";
 
 const Footer = () => {
     return (
@@ -6,10 +7,8 @@ const Footer = () => {
             <div className="container mx-auto px-4">
                 <div className="grid md:grid-cols-4 gap-8">
                     <div>
-                        <h3 className="text-lg font-bold mb-4">Smart Line Up</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-4">
-                            효율적인 대기열 관리 솔루션으로 비즈니스 성장을 돕습니다.
-                        </p>
+                        <h3 className="text-lg font-bold mb-4">FlowSurfing</h3>
+                        <img src={logo} alt="logo" className="w-10 h-10" />
                         <div className="flex space-x-4">
                             <Link to="#" className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400">
                                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -27,20 +26,12 @@ const Footer = () => {
                         <h3 className="text-lg font-bold mb-4">제품</h3>
                         <ul className="space-y-2">
                             <li>
-                                <a
-                                    href="#"
-                                    className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                                >
-                                    기능
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/pricing"
                                     className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
                                 >
                                     요금제
-                                </a>
+                                </Link>
                             </li>
                             <li>
                                 <a
@@ -88,7 +79,7 @@ const Footer = () => {
                     </div>
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
-                    <p>&copy; 2025 Smart Line Up. All rights reserved.</p>
+                    <p>&copy; 2025 FlowSurfing. All rights reserved.</p>
                 </div>
             </div>
         </footer >

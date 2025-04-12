@@ -9,13 +9,14 @@ import ChangePasswordPage from './pages/login/ChangePasswordPage';
 import HomePage from './pages/HomePage';
 import LinePage from './pages/line/LinePage';
 import { DarkModeProvider } from './components/DarkModeContext';
-import AttendeeInputPage from './pages/AttendeeInputPage';
+import AttendeeInputPage from './pages/attendee/AttendeeInputPage';
 import { AuthProvider } from './components/AuthContext';
 import PaymentPage from './pages/payment/PaymentPage';
 import PaymentProcessing from './pages/payment/PaymentProcessing';
 import PaymentSuccessPage from './pages/payment/PaymentSuccess';
 import PricingPage from './pages/payment/Pricing';
 import SettingsPage from './pages/settings/SettingsPage';
+import FeedbackPage from './pages/feedback/feedback';
 
 function App() {
     return (
@@ -37,6 +38,7 @@ function App() {
                         <Route path='/payment/success' element={<PaymentProcessing />} />
                         <Route path='/payment/pay/success' element={<PaymentSuccessPage />} />
                         <Route path='/settings' element={<SettingsPage/>}/>
+                        <Route path="/feedback" element={<FeedbackPage />} />
                     </Routes>
                 </DarkModeProvider>
             </BrowserRouter>

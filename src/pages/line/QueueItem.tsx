@@ -1,5 +1,7 @@
 "use client"
 
+// QueueItem 컴포넌트를 원래 기능이 작동하도록 수정합니다.
+
 import type React from "react"
 import { User, Clock, Check, Clock3, Trash2, GripVertical, ChevronDown, ChevronUp, Edit } from "lucide-react"
 import { type Queue, QueueStatus } from "../../components/types"
@@ -14,9 +16,20 @@ interface QueueItemProps {
   onRemove: (queueId: number) => void
   onEdit: () => void
   isDraggable: boolean
+  sequenceNumber?: number
+  showSequenceNumber?: boolean
 }
 
-const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemove, onEdit, isDraggable }) => {
+const QueueItem: React.FC<QueueItemProps> = ({
+  id,
+  queue,
+  onStatusChange,
+  onRemove,
+  onEdit,
+  isDraggable,
+  sequenceNumber,
+  showSequenceNumber = false,
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: !isDraggable,
@@ -108,6 +121,13 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
               <GripVertical size={18} />
             </div>
           )}
+
+          {showSequenceNumber && sequenceNumber !== undefined && isWaiting && (
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 flex items-center justify-center text-xs font-medium">
+              {sequenceNumber}
+            </div>
+          )}
+
           <div
             className={`flex-shrink-0 rounded-full p-2 ${isWaiting
                 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
@@ -180,8 +200,6 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
               <Clock size={12} className="flex-shrink-0" />
               {formatDate(queue.createdAt)} 등록
             </div>
-            {/* {queue.previousId && <div className="whitespace-nowrap truncate">이전: #{queue.previousId}</div>}
-            {queue.nextId && <div className="whitespace-nowrap truncate">다음: #{queue.nextId}</div>} */}
           </div>
           <div className="flex items-center mt-1 md:mt-0">
             <span className="mr-1">상세 정보</span>
@@ -210,4 +228,3 @@ const QueueItem: React.FC<QueueItemProps> = ({ id, queue, onStatusChange, onRemo
 }
 
 export default QueueItem
-

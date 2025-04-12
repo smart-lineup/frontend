@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowRight, CheckCircle, Users, Clock, BarChart3, Shield, ChevronRight } from "lucide-react"
@@ -12,24 +10,23 @@ import restaurantImage from "../assets/images/restaurant.png"
 import hospitalImage from "../assets/images/hospital.png"
 import storeImage from "../assets/images/store.png"
 import Footer from "../components/Footer"
+import { useAuth } from "../components/AuthContext"
 
 export default function HomePage() {
     const { darkMode } = useDarkMode()
     const navigate = useNavigate()
-    const [email, setEmail] = useState("")
     const [isVisible, setIsVisible] = useState(false)
-
+    const { isAuthenticated } = useAuth()
     useEffect(() => {
         setIsVisible(true)
     }, [])
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        navigate(`/login`)
-    }
-
-    const handleGetStarted = () => {
-        navigate("/signup")
+    const handleMove = () => {
+        if (isAuthenticated) {
+            navigate("/line")
+        } else {
+            navigate("/login")
+        }
     }
 
     return (
@@ -62,7 +59,7 @@ export default function HomePage() {
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <button
-                                        onClick={handleGetStarted}
+                                        onClick={handleMove}
                                         className="px-8 py-4 bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white rounded-xl font-medium text-lg transition-all duration-200 flex items-center justify-center shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20"
                                     >
                                         지금 시작하기
@@ -345,7 +342,7 @@ export default function HomePage() {
                                         <span className="text-gray-500 dark:text-gray-400 ml-2">/ 무료</span>
                                     </div>
                                     <button
-                                        onClick={handleGetStarted}
+                                        onClick={handleMove}
                                         className="w-full py-3 px-4 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-xl font-medium transition-colors duration-200"
                                     >
                                         무료로 시작하기
@@ -367,7 +364,7 @@ export default function HomePage() {
                                         </li>
                                         <li className="flex items-start">
                                             <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                                            <span>7일간의 데이터 보관</span>
+                                            <span>무제한 데이터 보관</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -403,10 +400,6 @@ export default function HomePage() {
                                         </li>
                                         <li className="flex items-start">
                                             <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                                            <span>고급 QR코드 커스터마이징</span>
-                                        </li>
-                                        <li className="flex items-start">
-                                            <CheckCircle className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
                                             <span>무제한 데이터 보관</span>
                                         </li>
                                         <li className="flex items-start">
@@ -437,15 +430,15 @@ export default function HomePage() {
                                 Smart Line Up으로 대기열 관리를 더 효율적으로 만들어보세요. <br/>
                                 질문이 있으시면 언제든지 문의해 주세요.
                             </p>
-                            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
+                            <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-center">
                                 <button
-                                    type="submit"
+                                    onClick={handleMove}
                                     className="px-6 py-3 bg-white hover:bg-gray-100 text-blue-600 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center shadow-lg"
                                 >
                                     무료로 시작하기
                                     <ArrowRight className="ml-2 h-5 w-5" />
                                 </button>
-                            </form>
+                            </div>
                             <p className="text-blue-200 text-sm">가입 즉시 무료로 이용할 수 있으며, 언제든지 해지할 수 있습니다.</p>
                         </div>
                     </div>

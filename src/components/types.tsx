@@ -23,6 +23,7 @@ export interface Line {
     id: number;
     name: string;
     uuid: string;
+    isQueuePositionVisibleToAttendee: boolean;
 }
 
 export enum BillingStatus {

@@ -1,9 +1,8 @@
 "use client"
 
 import type React from "react"
-import { ArrowLeft, MoveVertical, Share2, QrCode, FileDown, FileUp, Plus } from "lucide-react"
+import { ArrowLeft, QrCode, Share2, Download, Upload, UserPlus, GripVertical, Settings } from "lucide-react"
 import type { Line } from "../../components/types"
-import * as Tooltip from "@radix-ui/react-Tooltip"
 
 interface LineHeaderProps {
     selectedLine: Line
@@ -15,6 +14,7 @@ interface LineHeaderProps {
     onExcelDownload: () => void
     onExcelUpload: () => void
     onAddAttendee: () => void
+    onOpenSettings: () => void
     fileInputRef: React.RefObject<HTMLInputElement | null>
     handleExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
     role: string
@@ -30,138 +30,99 @@ const LineHeader: React.FC<LineHeaderProps> = ({
     onExcelDownload,
     onExcelUpload,
     onAddAttendee,
+    onOpenSettings,
     fileInputRef,
     handleExcelUpload,
     role,
 }) => {
-    const isPremium = role === "PREMIUM"
-
     return (
-        <div className="flex flex-col mb-6 gap-3 md:gap-4">
-            <div className="flex items-center w-full">
+        <div className="mb-6">
+            <div className="mb-4 flex items-center">
                 <button
                     onClick={onBack}
-                    className="mr-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex-shrink-0"
+                    className="mr-3 rounded-full p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
                 >
-                    <ArrowLeft size={18} />
+                    <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate max-w-[calc(100%-60px)]">
-                    {selectedLine.name}
-                </h1>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{selectedLine.name}</h1>
             </div>
 
-            <div className="flex flex-wrap gap-2 w-full justify-start md:justify-end">
-                <button
-                    onClick={onToggleDraggable}
-                    className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isDraggable
-                            ? "bg-purple-500 hover:bg-purple-600 text-white"
-                            : "bg-gray-200 hover:bg-gray-300 text-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-200"
-                        }`}
-                >
-                    <MoveVertical size={16} />
-                    <span className="whitespace-nowrap text-xs">{isDraggable ? "순서 저장" : "순서 변경"}</span>
-                </button>
+            <div className="flex flex-wrap gap-2">
                 <button
                     onClick={onAddAttendee}
-                    className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                    className="flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
                 >
-                    <Plus size={16} />
-                    <span className="whitespace-nowrap text-xs">대기자 추가</span>
+                    <UserPlus size={16} className="mr-1" />
+                    대기자 추가
                 </button>
-                <button
-                    onClick={onShare}
-                    className="flex items-center gap-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                >
-                    <Share2 size={16} />
-                    <span className="whitespace-nowrap text-xs">공유</span>
-                </button>
+
                 <button
                     onClick={onToggleQRCode}
-                    className="flex items-center gap-1 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                    className="flex items-center rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                 >
-                    <QrCode size={16} />
-                    <span className="whitespace-nowrap text-xs">QR</span>
+                    <QrCode size={16} className="mr-1" />
+                    QR 코드
                 </button>
 
-                {/* 엑셀 다운로드 버튼에 툴팁 추가 */}
-                <Tooltip.Provider delayDuration={300}>
-                    <Tooltip.Root>
-                        <Tooltip.Trigger asChild>
-                            <button
-                                onClick={onExcelDownload}
-                                className={`flex items-center gap-1 px-3 py-2 ${isPremium ? "bg-indigo-500 hover:bg-indigo-600" : "bg-indigo-300 cursor-not-allowed"
-                                    } text-white rounded-lg transition-colors`}
-                            >
-                                <FileDown size={16} />
-                                <span className="whitespace-nowrap text-xs">엑셀 다운로드</span>
-                            </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                            <Tooltip.Content
-                                className="z-50 max-w-xs p-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg"
-                                sideOffset={5}
-                                side="top"
-                                align="center"
-                                alignOffset={0}
-                                avoidCollisions
-                            >
-                                {isPremium ? (
-                                    <div className="font-semibold">현재 대기열의 모든 정보를 엑셀 파일로 다운로드합니다.</div>
-                                ) : (
-                                    <div className="font-semibold">프리미엄 기능입니다. 업그레이드하여 사용하세요.</div>
-                                )}
-                                <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
-                            </Tooltip.Content>
-                        </Tooltip.Portal>
-                    </Tooltip.Root>
-                </Tooltip.Provider>
+                <button
+                    onClick={onShare}
+                    className="flex items-center rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    <Share2 size={16} className="mr-1" />
+                    공유
+                </button>
 
-                {/* 엑셀 업로드 버튼 */}
-                <Tooltip.Provider delayDuration={300}>
-                    <Tooltip.Root>
-                        <Tooltip.Trigger asChild>
-                            <button
-                                onClick={onExcelUpload}
-                                className={`flex items-center gap-1 px-3 py-2 ${isPremium ? "bg-green-500 hover:bg-green-600" : "bg-green-300 cursor-not-allowed"
-                                    } text-white rounded-lg transition-colors`}
-                            >
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleExcelUpload}
-                                    accept=".xlsx,.xls"
-                                    className="hidden"
-                                />
-                                <FileUp size={16} />
-                                <span className="whitespace-nowrap text-xs">엑셀 업로드</span>
-                            </button>
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                            <Tooltip.Content
-                                className="z-50 max-w-xs p-3 bg-gray-800 text-white text-sm rounded-lg shadow-lg"
-                                sideOffset={5}
-                                side="top"
-                                align="center"
-                                alignOffset={0}
-                                avoidCollisions
-                            >
-                                {isPremium ? (
-                                    <>
-                                        <div className="font-semibold mb-1">엑셀 파일 형식 안내:</div>
-                                        <ul className="list-disc pl-4 space-y-1">
-                                            <li>첫 번째 행은 열 제목이어야 합니다.</li>
-                                            <li>첫번째 열:&nbsp;'이름', &nbsp;두번째 열:&nbsp;'전화번호'</li>
-                                            <li>그 외 열은 추가 정보로 자동 저장됩니다.</li>
-                                        </ul>
-                                    </>
-                                ) : (
-                                    <div className="font-semibold">프리미엄 기능입니다. 업그레이드하여 사용하세요.</div>
-                                )}
-                                <Tooltip.Arrow className="fill-gray-800" width={10} height={5} />
-                            </Tooltip.Content>
-                        </Tooltip.Portal>
-                    </Tooltip.Root>
-                </Tooltip.Provider>
+                <button
+                    onClick={onToggleDraggable}
+                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${isDraggable
+                            ? "bg-yellow-200 text-yellow-800 hover:bg-yellow-300 dark:bg-yellow-700 dark:text-yellow-200 dark:hover:bg-yellow-600"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        }`}
+                >
+                    <GripVertical size={16} className="mr-1" />
+                    {isDraggable ? "순서 변경 중" : "순서 변경"}
+                </button>
+
+                <button
+                    onClick={onExcelDownload}
+                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${role === "FREE"
+                            ? "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        }`}
+                    disabled={role === "FREE"}
+                >
+                    <Download size={16} className="mr-1" />
+                    엑셀 다운로드
+                </button>
+
+                <button
+                    onClick={onExcelUpload}
+                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${role === "FREE"
+                            ? "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                            : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        }`}
+                    disabled={role === "FREE"}
+                >
+                    <Upload size={16} className="mr-1" />
+                    엑셀 업로드
+                </button>
+
+                <button
+                    onClick={onOpenSettings}
+                    className="flex items-center rounded-lg bg-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                >
+                    <Settings size={16} className="mr-1" />
+                    설정
+                </button>
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleExcelUpload}
+                    accept=".xlsx, .xls"
+                    className="hidden"
+                    aria-hidden="true"
+                />
             </div>
         </div>
     )

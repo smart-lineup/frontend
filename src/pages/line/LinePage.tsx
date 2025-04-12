@@ -21,6 +21,7 @@ import {
   QueueList,
   EmptyState,
   LimitModal,
+  LineSettingsModal,
 } from "../line"
 import { useAuth } from "../../components/AuthContext"
 
@@ -45,6 +46,20 @@ const LinePage: React.FC = () => {
     title: "",
     message: "",
   })
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+
+  // 설정 상태
+  const [showSequenceNumbers, setShowSequenceNumbers] = useState(() => {
+    const saved = localStorage.getItem("showSequenceNumbers")
+    return saved !== null ? JSON.parse(saved) : true
+  })
+
+  const [hideEnteredAttendees, setHideEnteredAttendees] = useState(() => {
+    const saved = localStorage.getItem("hideEnteredAttendees")
+    return saved !== null ? JSON.parse(saved) : false
+  })
+
+  const [showQueuePositionToAttendee, setShowQueuePositionToAttendee] = useState(false)
 
   const { username, isAuthenticated, authLoading, role } = useAuth()
   const navigate = useNavigate()
@@ -54,7 +69,16 @@ const LinePage: React.FC = () => {
       alert("로그인이 필요합니다.")
       navigate("/")
     }
-  }, [authLoading, isAuthenticated])
+  }, [authLoading, isAuthenticated, navigate])
+
+  // 설정 변경 시 로컬 스토리지에 저장
+  useEffect(() => {
+    localStorage.setItem("showSequenceNumbers", JSON.stringify(showSequenceNumbers))
+  }, [showSequenceNumbers])
+
+  useEffect(() => {
+    localStorage.setItem("hideEnteredAttendees", JSON.stringify(hideEnteredAttendees))
+  }, [hideEnteredAttendees])
 
   // Fetch all lines on page load
   useEffect(() => {
@@ -180,9 +204,25 @@ const LinePage: React.FC = () => {
     setIsDraggable(false)
     setEditingAttendee(null)
 
+    // 서버에서 받아온 라인의 isQueuePositionVisibleToAttendee 값을 사용
+    setShowQueuePositionToAttendee(line.isQueuePositionVisibleToAttendee)
+
     // Create share URL
     const shareUrl = `${window.location.origin}/attendee/${line.uuid}`
     setShareUrl(shareUrl)
+  }
+
+  // 설정 토글 핸들러
+  const handleToggleShowSequenceNumbers = () => {
+    setShowSequenceNumbers((prev: boolean) => !prev)
+  }
+
+  const handleToggleHideEnteredAttendees = () => {
+    setHideEnteredAttendees((prev: boolean) => !prev)
+  }
+
+  const handleToggleShowQueuePositionToAttendee = () => {
+    setShowQueuePositionToAttendee((prev: boolean) => !prev)
   }
 
   const prepareInfoObject = (infoFields: { key: string; value: string }[]) => {
@@ -602,72 +642,70 @@ const LinePage: React.FC = () => {
               onDeleteLine={handleDeleteLine}
               onAddLine={handleAddLine}
               onEditLine={handleEditLine}
-              onAddLineClick={() => {
-                setLimitModal({
-                  isOpen: true,
-                  title: "라인 개수 제한",
-                  message:
-                    "무료 계정은 최대 2개의 라인만 관리할 수 있습니다. 프리미엄으로 업그레이드하여 무제한으로 라인을 관리하세요.",
-                })
-              }}
+              onAddLineClick={handleAddLineClick}
               role={role || "FREE"}
             />
 
             {/* Main Content */}
             <div className="flex-1">
               {selectedLine ? (
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 overflow-hidden">
-                  <LineHeader
-                    selectedLine={selectedLine}
-                    isDraggable={isDraggable}
-                    onBack={() => {
-                      setSelectedLine(null)
-                      setQueues([])
-                    }}
-                    onToggleDraggable={toggleDraggable}
-                    onShare={handleShare}
-                    onToggleQRCode={toggleQRCode}
-                    onExcelDownload={handleExcelDownload}
-                    onExcelUpload={handleExcelUploadClick}
-                    onAddAttendee={handleAddAttendeeClick}
-                    fileInputRef={fileInputRef}
-                    handleExcelUpload={handleExcelUpload}
-                    role={role || "FREE"}
-                  />
-
-                  {showQRCode && <QRCodeModal shareUrl={shareUrl} onClose={toggleQRCode} />}
-
-                  {showExcelUpload && (
-                    <ExcelUploadModal
-                      excelData={excelData}
-                      isUploading={isUploading}
-                      onConfirm={handleConfirmExcelUpload}
-                      onCancel={() => {
-                        setShowExcelUpload(false)
-                        setExcelData([])
+                <div className="space-y-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 overflow-hidden">
+                    <LineHeader
+                      selectedLine={selectedLine}
+                      isDraggable={isDraggable}
+                      onBack={() => {
+                        setSelectedLine(null)
+                        setQueues([])
                       }}
+                      onToggleDraggable={toggleDraggable}
+                      onShare={handleShare}
+                      onToggleQRCode={toggleQRCode}
+                      onExcelDownload={handleExcelDownload}
+                      onExcelUpload={handleExcelUploadClick}
+                      onAddAttendee={handleAddAttendeeClick}
+                      onOpenSettings={() => setShowSettingsModal(true)}
+                      fileInputRef={fileInputRef}
+                      handleExcelUpload={handleExcelUpload}
+                      role={role || "FREE"}
                     />
-                  )}
 
-                  {/* Add/Edit Attendee Form */}
-                  {showAddAttendee && (
-                    <AttendeeForm
-                      isEditing={!!editingAttendee}
-                      editingAttendee={editingAttendee}
-                      onSubmit={handleAttendeeFormSubmit}
-                      onCancel={handleAttendeeFormCancel}
+                    {showQRCode && <QRCodeModal shareUrl={shareUrl} onClose={toggleQRCode} />}
+
+                    {showExcelUpload && (
+                      <ExcelUploadModal
+                        excelData={excelData}
+                        isUploading={isUploading}
+                        onConfirm={handleConfirmExcelUpload}
+                        onCancel={() => {
+                          setShowExcelUpload(false)
+                          setExcelData([])
+                        }}
+                      />
+                    )}
+
+                    {/* Add/Edit Attendee Form */}
+                    {showAddAttendee && (
+                      <AttendeeForm
+                        isEditing={!!editingAttendee}
+                        editingAttendee={editingAttendee}
+                        onSubmit={handleAttendeeFormSubmit}
+                        onCancel={handleAttendeeFormCancel}
+                      />
+                    )}
+
+                    {/* Queue List */}
+                    <QueueList
+                      queues={queues}
+                      isDraggable={isDraggable}
+                      onStatusChange={handleStatusChange}
+                      onRemove={removeQueue}
+                      onEdit={startEditAttendee}
+                      onDragEnd={handleDragEnd}
+                      showSequenceNumbers={showSequenceNumbers}
+                      hideEnteredAttendees={hideEnteredAttendees}
                     />
-                  )}
-
-                  {/* Queue List */}
-                  <QueueList
-                    queues={queues}
-                    isDraggable={isDraggable}
-                    onStatusChange={handleStatusChange}
-                    onRemove={removeQueue}
-                    onEdit={startEditAttendee}
-                    onDragEnd={handleDragEnd}
-                  />
+                  </div>
                 </div>
               ) : (
                 <EmptyState />
@@ -675,6 +713,21 @@ const LinePage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Settings Modal */}
+        <LineSettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          showSequenceNumbers={showSequenceNumbers}
+          hideEnteredAttendees={hideEnteredAttendees}
+          showQueuePositionToAttendee={showQueuePositionToAttendee}
+          onToggleShowSequenceNumbers={handleToggleShowSequenceNumbers}
+          onToggleHideEnteredAttendees={handleToggleHideEnteredAttendees}
+          onToggleShowQueuePositionToAttendee={handleToggleShowQueuePositionToAttendee}
+          selectedLineId={selectedLine?.id} // 선택된 라인 ID 전달
+        />
+
+        {/* Limit Modal */}
         <LimitModal
           isOpen={limitModal.isOpen}
           onClose={() => setLimitModal({ ...limitModal, isOpen: false })}

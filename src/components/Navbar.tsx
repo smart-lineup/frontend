@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "./AuthContext"
-import { Sun, Moon, Settings, LogIn, Menu, X, CreditCard } from "lucide-react"
+import { Sun, Moon, Settings, LogIn, Menu, X, CreditCard, MessageSquare } from "lucide-react"
 import { useDarkMode } from "./DarkModeContext"
 
 const Navbar: React.FC = () => {
@@ -30,6 +30,11 @@ const Navbar: React.FC = () => {
 
     const handleGoToPricing = () => {
         navigate("/pricing")
+        setIsMobileMenuOpen(false)
+    }
+
+    const handleGoToFeedback = () => {
+        navigate("/feedback")
         setIsMobileMenuOpen(false)
     }
 
@@ -100,6 +105,15 @@ const Navbar: React.FC = () => {
                     ) : (
                         <Sun size={20} className="text-yellow-400" />
                     )}
+                </button>
+
+                {/* Feedback button */}
+                <button
+                    onClick={handleGoToFeedback}
+                    className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200"
+                >
+                    <MessageSquare size={16} className="mr-1" />
+                    <span>건의하기</span>
                 </button>
 
                 {/* Manage button - only when authenticated */}
@@ -216,6 +230,15 @@ const Navbar: React.FC = () => {
                             ) : (
                                 <Sun size={20} className="text-yellow-400" />
                             )}
+                        </button>
+
+                        {/* Feedback button */}
+                        <button
+                            onClick={handleGoToFeedback}
+                            className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                        >
+                            <span>건의하기</span>
+                            <MessageSquare size={16} />
                         </button>
 
                         {/* Manage button - only when authenticated */}

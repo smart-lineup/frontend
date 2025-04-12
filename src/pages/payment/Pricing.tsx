@@ -101,7 +101,7 @@ const PricingPage: React.FC = () => {
                                     </li>
                                     <li className="flex items-start">
                                         <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                                        <span>7일간의 데이터 보관</span>
+                                        <span>무제한 데이터 보관</span>
                                     </li>
                                     <li className="flex items-start text-gray-500 dark:text-gray-400">
                                         <X className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0 mt-0.5" />
@@ -195,7 +195,7 @@ const PricingPage: React.FC = () => {
                                     </tr>
                                     <tr>
                                         <td className="p-4 border-b border-gray-200 dark:border-gray-700">데이터 보관 기간</td>
-                                        <td className="p-4 border-b border-gray-200 dark:border-gray-700 text-center">7일</td>
+                                        <td className="p-4 border-b border-gray-200 dark:border-gray-700 text-center">무제한</td>
                                         <td className="p-4 border-b border-gray-200 dark:border-gray-700 text-center bg-blue-50 dark:bg-blue-900/10">
                                             무제한
                                         </td>

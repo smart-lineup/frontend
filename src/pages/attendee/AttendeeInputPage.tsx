@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from "react-router-dom";
 import axios from 'axios';
-import config from '../config';
+import config from '../../config';
 
 export interface AttendeeFormData {
     name: string;
