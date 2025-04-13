@@ -13,6 +13,7 @@ interface LoginInput {
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
+    const { fetchUser } = useAuth();
     const moveSignup = () => {
         navigate("/signup");
     };
@@ -35,11 +36,12 @@ const LoginPage: React.FC = () => {
     }
 
     const login: SubmitHandler<LoginInput> = async (data) => {
-        const { fetchUser } = useAuth();
         try {
-            const response = await axios.post(`${config.backend}/auth/login`, {
+            await axios.post(`${config.backend}/auth/login`, {
                 email: data.email,
                 password: data.password
+            }, {
+                withCredentials: true
             });
             await fetchUser();
             navigate('/');

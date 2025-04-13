@@ -32,7 +32,6 @@ const LineSettingsModal: React.FC<LineSettingsModalProps> = ({
 }) => {
     if (!isOpen) return null
 
-    // updateQueuePositionVisibility 함수를 수정하여 서버에 요청 후 성공 시 콜백을 호출하도록 변경
     const updateQueuePositionVisibility = async (newValue: boolean) => {
         if (!selectedLineId) return
 
@@ -43,18 +42,17 @@ const LineSettingsModal: React.FC<LineSettingsModalProps> = ({
                 { withCredentials: true },
             )
             console.log("Queue position visibility updated successfully")
-            // 성공적으로 업데이트되면 상태 변경
+            
             onToggleShowQueuePositionToAttendee()
         } catch (error) {
             console.error("Failed to update queue position visibility:", error)
         }
     }
 
-    // handleToggleQueuePosition 함수를 수정하여 상태 변경 전에 서버 요청을 보내도록 변경
+    
     const handleToggleQueuePosition = () => {
         const newValue = !showQueuePositionToAttendee
         updateQueuePositionVisibility(newValue)
-        // onToggleShowQueuePositionToAttendee() 호출은 updateQueuePositionVisibility 내부로 이동
     }
 
     return (

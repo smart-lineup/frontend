@@ -86,10 +86,9 @@ const LineHeader: React.FC<LineHeaderProps> = ({
                 <button
                     onClick={onExcelDownload}
                     className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${role === "FREE"
-                            ? "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         }`}
-                    disabled={role === "FREE"}
                 >
                     <Download size={16} className="mr-1" />
                     엑셀 다운로드
@@ -98,10 +97,9 @@ const LineHeader: React.FC<LineHeaderProps> = ({
                 <button
                     onClick={onExcelUpload}
                     className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${role === "FREE"
-                            ? "cursor-not-allowed bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-500"
+                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         }`}
-                    disabled={role === "FREE"}
                 >
                     <Upload size={16} className="mr-1" />
                     엑셀 업로드

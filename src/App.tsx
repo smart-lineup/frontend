@@ -17,6 +17,9 @@ import PaymentSuccessPage from './pages/payment/PaymentSuccess';
 import PricingPage from './pages/payment/Pricing';
 import SettingsPage from './pages/settings/SettingsPage';
 import FeedbackPage from './pages/feedback/feedback';
+import AttendeeFullPage from './pages/attendee/AttendeeFullPage';
+import AttendeeView from './pages/attendee/AttendeeView';
+import AttendeeViewWithoutPosition from './pages/attendee/AttendeeViewWithoutPosition';
 
 function App() {
     return (
@@ -39,6 +42,8 @@ function App() {
                         <Route path='/payment/pay/success' element={<PaymentSuccessPage />} />
                         <Route path='/settings' element={<SettingsPage/>}/>
                         <Route path="/feedback" element={<FeedbackPage />} />
+                        <Route path="/attendee/full" element={<AttendeeFullPage />} />
+                        <Route path="/attendee/view/:uuid" element={<AttendeeView />} />
                     </Routes>
                 </DarkModeProvider>
             </BrowserRouter>

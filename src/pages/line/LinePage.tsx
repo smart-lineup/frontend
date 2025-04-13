@@ -39,7 +39,7 @@ const LinePage: React.FC = () => {
   const [showExcelUpload, setShowExcelUpload] = useState(false)
   const [excelData, setExcelData] = useState<any[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [editingAttendee, setEditingAttendee] = useState<{ queueId: number; attendee: Attendee } | null>(null)
   const [limitModal, setLimitModal] = useState({
     isOpen: false,
