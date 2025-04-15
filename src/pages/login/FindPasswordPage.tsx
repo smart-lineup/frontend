@@ -44,6 +44,14 @@ const FindPasswordPage: React.FC = () => {
             setValue("email", data.email!);
         } catch (error) {
             if (axios.isAxiosError(error)) {
+                if (error.response?.data === "SNS 계정으로 로그인한 아이디입니다.") {
+                    setModalTitle("비밀번호 찾기 실패!");
+                    setModalMessage("SNS 계정으로 로그인한 아이디입니다.");
+                    setModalButtonColor("bg-red-600 hover:bg-red-500");
+                    setModalButtonName("확인");
+                    setIsModalOpen(true);
+                    return;
+                }
                 setModalTitle("비밀번호 찾기 실패!");
                 setModalMessage("아이디가 존재하지 않습니다.");
                 setModalButtonColor("bg-red-600 hover:bg-red-500");

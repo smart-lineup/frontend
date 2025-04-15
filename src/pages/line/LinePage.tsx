@@ -47,6 +47,7 @@ const LinePage: React.FC = () => {
     message: "",
   })
   const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [intervalId, setIntervalId] = useState<number | null>(null)
 
   // 설정 상태
   const [showSequenceNumbers, setShowSequenceNumbers] = useState(() => {
@@ -197,6 +198,12 @@ const LinePage: React.FC = () => {
   }
 
   const handleSelectLine = (line: Line) => {
+    // 이전 인터벌이 있다면 제거
+    if (intervalId) {
+      clearInterval(intervalId)
+      setIntervalId(null)
+    }
+
     setSelectedLine(line)
     fetchLineQueues(line.id)
     setShowAddAttendee(false)
@@ -210,7 +217,22 @@ const LinePage: React.FC = () => {
     // Create share URL
     const shareUrl = `${window.location.origin}/attendee/${line.uuid}`
     setShareUrl(shareUrl)
+
+    // 3초마다 대기열 갱신
+    const newIntervalId = setInterval(() => {
+      fetchLineQueues(line.id)
+    }, 30000)
+    setIntervalId(newIntervalId)
   }
+
+  // 컴포넌트 언마운트 시 인터벌 제거
+  useEffect(() => {
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    }
+  }, [intervalId])
 
   // 설정 토글 핸들러
   const handleToggleShowSequenceNumbers = () => {
