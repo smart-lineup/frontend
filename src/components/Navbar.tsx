@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "./AuthContext"
 import { Sun, Moon, Settings, LogIn, Menu, X, CreditCard, MessageSquare } from "lucide-react"
 import { useDarkMode } from "./DarkModeContext"
+import profile from "../assets/images/profile.png"
 
 const Navbar: React.FC = () => {
     const { darkMode, toggleDarkMode } = useDarkMode()
@@ -162,7 +163,7 @@ const Navbar: React.FC = () => {
                             <span className="sr-only">Open user menu</span>
                             <img
                                 className="w-8 h-8 rounded-full"
-                                src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                src={profile}
                                 alt="user photo"
                             />
                         </button>
@@ -280,7 +281,7 @@ const Navbar: React.FC = () => {
                                 <div className="flex items-center px-3 py-2 text-gray-700 dark:text-gray-200">
                                     <img
                                         className="w-8 h-8 rounded-full mr-2"
-                                        src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                                        src={profile}
                                         alt="user photo"
                                     />
                                     <div>

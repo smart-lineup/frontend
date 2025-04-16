@@ -400,12 +400,12 @@ const LinePage: React.FC = () => {
   const handleConfirmExcelUpload = async () => {
     if (!selectedLine || excelData.length === 0) return
 
-    // FREE 사용자이고 현재 대기자 수 + 추가할 대기자 수가 20명을 초과하는 경우 제한
-    if (role === "FREE" && queues.length + excelData.length > 20) {
+    // FREE 사용자
+    if (role === "FREE") {
       setLimitModal({
         isOpen: true,
-        title: "대기자 수 제한",
-        message: `무료 계정은 최대 20명의 대기자만 관리할 수 있습니다. 현재 ${queues.length}명이 있으며, ${excelData.length}명을 추가하면 제한을 초과합니다.`,
+        title: "엑셀 업로드 제한",
+        message: `엑셀 업로드는 프리미엄 기능입니다. 프리미엄으로 업그레이드하여 이 기능을 사용하세요.`,
       })
       setShowExcelUpload(false)
       return
