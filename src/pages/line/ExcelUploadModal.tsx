@@ -14,7 +14,9 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({ excelData, isUpload
     return (
         <div className="mb-6 p-6 bg-white dark:bg-gray-700 rounded-xl shadow-md animate-fadeIn">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">엑셀 데이터 미리보기</h2>
-
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                같은 번호의 대기자의 경우 추가되지 않습니다.
+            </p>
             {excelData.length > 0 ? (
                 <>
                     <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center">

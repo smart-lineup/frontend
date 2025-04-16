@@ -19,7 +19,7 @@ import SettingsPage from './pages/settings/SettingsPage';
 import FeedbackPage from './pages/feedback/feedback';
 import AttendeeFullPage from './pages/attendee/AttendeeFullPage';
 import AttendeeView from './pages/attendee/AttendeeView';
-import AttendeeViewWithoutPosition from './pages/attendee/AttendeeViewWithoutPosition';
+import CancelPage from './pages/attendee/CancelPage';
 
 function App() {
     return (
@@ -44,6 +44,7 @@ function App() {
                         <Route path="/feedback" element={<FeedbackPage />} />
                         <Route path="/attendee/full" element={<AttendeeFullPage />} />
                         <Route path="/attendee/view/:uuid" element={<AttendeeView />} />
+                        <Route path="/cancel" element={<CancelPage />} />
                     </Routes>
                 </DarkModeProvider>
             </BrowserRouter>

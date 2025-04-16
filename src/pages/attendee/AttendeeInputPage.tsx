@@ -71,14 +71,16 @@ const AttendeeInputPage: React.FC = () => {
             setSubmitting(true)
             setError(null)
 
-            await axios.post(`${config.backend}/attendee/add`, {
+            const response = await axios.post(`${config.backend}/attendee/add`, {
                 uuid,
                 name: data.name,
                 phone: data.phone,
             })
-            
-            // 성공적으로 추가되면 대기 상태 페이지로 리다이렉션
-            navigate(`/attendee/view/${uuid}?phone=${encodeURIComponent(data.phone)}`)
+            if (response.data == "ok") {
+                navigate(`/attendee/view/${uuid}?phone=${encodeURIComponent(data.phone)}`)
+            } else {
+                setError(response.data)
+            }
         } catch (error: any) {
             console.error("Error adding attendee:", error)
 

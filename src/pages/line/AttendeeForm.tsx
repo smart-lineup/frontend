@@ -90,6 +90,9 @@ const AttendeeForm: React.FC<AttendeeFormProps> = ({ isEditing, editingAttendee,
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                 {isEditing ? "대기자 정보 수정" : "대기열에 추가하기"}
             </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                기다리고 있는 손님과 같은 번호가 있으면 추가할 수 없습니다.
+            </p>
             <div className="space-y-4">
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">

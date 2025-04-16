@@ -276,7 +276,7 @@ const LinePage: React.FC = () => {
     try {
       const infoObj = prepareInfoObject(infoFields)
 
-      await axios.post(
+      const response = await axios.post(
         `${config.backend}/queue/add`,
         {
           lineId: selectedLine.id,
@@ -291,8 +291,12 @@ const LinePage: React.FC = () => {
         },
       )
 
-      fetchLineQueues(selectedLine.id)
-      setShowAddAttendee(false)
+      if (response.data == "ok") {
+        fetchLineQueues(selectedLine.id)
+        setShowAddAttendee(false)
+      } else {
+        setError("이미 같은 번호의 대기자가 있습니다.")
+      }
     } catch (e) {
       console.error("Error adding attendee:", e)
       setError("대기자 추가에 실패했습니다.")
