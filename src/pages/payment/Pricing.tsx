@@ -14,7 +14,7 @@ const PricingPage: React.FC = () => {
     const [isAnnual, setIsAnnual] = useState(true)
     const navigate = useNavigate()
     const { premiumPrice, annualSaving } = usePlanTypeInfo(isAnnual)
-    const { username, isAuthenticated, authLoading, role } = useAuth()
+    const { isAuthenticated, authLoading } = useAuth()
 
     const paymentUrl = `/payment?plan=${isAnnual ? "annual" : "monthly"}`
 

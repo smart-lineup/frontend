@@ -4,20 +4,24 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "./AuthContext"
-import { Sun, Moon, Settings, LogIn, Menu, X, CreditCard, MessageSquare } from "lucide-react"
+import { Sun, Moon, Settings, LogIn, Menu, X, MessageSquare, Beaker } from "lucide-react"
 import { useDarkMode } from "./DarkModeContext"
+import config from "../config"
+import axios from "axios"
 import profile from "../assets/images/profile.png"
 
 const Navbar: React.FC = () => {
     const { darkMode, toggleDarkMode } = useDarkMode()
     const navigate = useNavigate()
-    const { username, isAuthenticated, logout, role } = useAuth()
+    const { username, isAuthenticated, logout, isPremium, fetchUser } = useAuth()
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const buttonRef = useRef<HTMLButtonElement>(null)
 
-    const isPremium = role === "PREMIUM"
+    const [showModal, setShowModal] = useState(false)
+    const [modalMessage, setModalMessage] = useState("")
+    const [modalType, setModalType] = useState<"success" | "error">("success")
 
     const handleGoToManage = () => {
         navigate("/line")
@@ -54,6 +58,29 @@ const Navbar: React.FC = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen)
     }
 
+    const handleBetaTest = async () => {
+        try {
+            await axios.post(
+                `${config.backend}/user/apply/beta`,
+                {},
+                {
+                    withCredentials: true,
+                },
+            )
+            // 성공 시 모달 표시
+            setModalMessage("베타테스트 신청이 완료되었습니다. 감사합니다!")
+            setModalType("success")
+            setShowModal(true)
+            await fetchUser();
+        } catch (e) {
+            console.error(e)
+            // 실패 시 모달 표시
+            setModalMessage("베타테스트 신청 중 오류가 발생했습니다. 다시 시도해주세요.")
+            setModalType("error")
+            setShowModal(true)
+        }
+    }
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -75,9 +102,7 @@ const Navbar: React.FC = () => {
     return (
         <header className="bg-white dark:bg-gray-800 shadow h-16 flex items-center justify-between px-4 md:px-6 transition-colors duration-200">
             <div className="text-lg md:text-xl font-bold dark:text-white">
-                <Link to="/">
-                    Smart Line Up
-                </Link>
+                <Link to="/">Smart Line Up</Link>
             </div>
 
             {/* Mobile menu button */}
@@ -131,13 +156,25 @@ const Navbar: React.FC = () => {
                 {/* Subscribe button - only when authenticated and not premium */}
                 {isAuthenticated && !isPremium && (
                     <button
+                        onClick={handleBetaTest}
+                        className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
+                    >
+                        <Beaker size={16} className="mr-1" />
+                        <span>베타테스트 신청하기</span>
+                    </button>
+                )}
+
+                {/* 이전 구독하기 버튼 (주석 처리)
+                    {isAuthenticated && !isPremium && (
+                    <button
                         onClick={handleGoToPricing}
                         className="flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200"
                     >
                         <CreditCard size={16} className="mr-1" />
                         <span>구독하기</span>
                     </button>
-                )}
+                    )}
+                */}
 
                 {/* Login button - only when not authenticated */}
                 {!isAuthenticated && (
@@ -191,6 +228,19 @@ const Navbar: React.FC = () => {
                                     </li>
                                     {!isPremium && (
                                         <li>
+                                            <button
+                                                onClick={handleBetaTest}
+                                                className="block px-4 py-2 text-green-600 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-green-700 dark:hover:text-green-300"
+                                                role="menuitem"
+                                            >
+                                                베타테스트 신청하기
+                                            </button>
+                                        </li>
+                                    )}
+
+                                    {/* 이전 프리미엄 업그레이드 링크 (주석 처리)
+                                        {!isPremium && (
+                                            <li>
                                             <Link
                                                 to="/pricing"
                                                 className="block px-4 py-2 text-green-600 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-green-700 dark:hover:text-green-300"
@@ -198,8 +248,9 @@ const Navbar: React.FC = () => {
                                             >
                                                 프리미엄으로 업그레이드
                                             </Link>
-                                        </li>
-                                    )}
+                                            </li>
+                                        )}
+                                    */}
                                     <li>
                                         <button
                                             onClick={handleLogout}
@@ -256,13 +307,25 @@ const Navbar: React.FC = () => {
                         {/* Subscribe button - only when authenticated and not premium */}
                         {isAuthenticated && !isPremium && (
                             <button
+                                onClick={handleBetaTest}
+                                className="flex items-center justify-between px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                            >
+                                <span>베타테스트 신청하기</span>
+                                <Beaker size={16} />
+                            </button>
+                        )}
+
+                        {/* 이전 구독하기 버튼 (주석 처리)
+                            {isAuthenticated && !isPremium && (
+                            <button
                                 onClick={handleGoToPricing}
                                 className="flex items-center justify-between px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                             >
                                 <span>구독하기</span>
                                 <CreditCard size={16} />
                             </button>
-                        )}
+                            )}
+                        */}
 
                         {/* Login button - only when not authenticated */}
                         {!isAuthenticated && (
@@ -296,13 +359,24 @@ const Navbar: React.FC = () => {
                                     계정 설정
                                 </Link>
                                 {!isPremium && (
+                                    <button
+                                        onClick={handleBetaTest}
+                                        className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400"
+                                    >
+                                        베타테스트 신청하기
+                                    </button>
+                                )}
+
+                                {/* 이전 프리미엄 업그레이드 링크 (주석 처리)
+                                    {!isPremium && (
                                     <Link
                                         to="/pricing"
                                         className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-green-600 dark:text-green-400"
                                     >
                                         프리미엄으로 업그레이드
                                     </Link>
-                                )}
+                                    )}
+                                */}
                                 <button
                                     onClick={handleLogout}
                                     className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-left"
@@ -311,6 +385,66 @@ const Navbar: React.FC = () => {
                                 </button>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+            {/* 베타테스트 신청 결과 모달 */}
+            {showModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                    style={{ backgroundColor: "rgba(0, 0, 0, 0.6)" }}
+                    onClick={() => setShowModal(false)}
+                >
+                    <div
+                        className={`bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full shadow-xl ${modalType === "success" ? "border-l-4 border-green-500" : "border-l-4 border-red-500"
+                            }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center">
+                            {modalType === "success" ? (
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                    <svg
+                                        className="w-6 h-6 text-green-600 dark:text-green-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                            ) : (
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
+                                    <svg
+                                        className="w-6 h-6 text-red-600 dark:text-red-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </div>
+                            )}
+                            <div className="ml-4">
+                                <h3
+                                    className={`text-lg font-medium ${modalType === "success" ? "text-green-800 dark:text-green-200" : "text-red-800 dark:text-red-200"
+                                        }`}
+                                >
+                                    {modalType === "success" ? "성공" : "오류"}
+                                </h3>
+                                <p className="mt-1 text-gray-600 dark:text-gray-400">{modalMessage}</p>
+                            </div>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className={`px-4 py-2 ${modalType === "success" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"
+                                    } text-white rounded-md`}
+                            >
+                                확인
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

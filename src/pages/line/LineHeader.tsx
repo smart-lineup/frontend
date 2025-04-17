@@ -17,7 +17,7 @@ interface LineHeaderProps {
     onOpenSettings: () => void
     fileInputRef: React.RefObject<HTMLInputElement | null>
     handleExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
-    role: string
+    isPremium: boolean
 }
 
 const LineHeader: React.FC<LineHeaderProps> = ({
@@ -33,7 +33,7 @@ const LineHeader: React.FC<LineHeaderProps> = ({
     onOpenSettings,
     fileInputRef,
     handleExcelUpload,
-    role,
+    isPremium,
 }) => {
     return (
         <div className="mb-6">
@@ -85,7 +85,7 @@ const LineHeader: React.FC<LineHeaderProps> = ({
 
                 <button
                     onClick={onExcelDownload}
-                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${role === "FREE"
+                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${!isPremium
                             ? "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         }`}
@@ -96,7 +96,7 @@ const LineHeader: React.FC<LineHeaderProps> = ({
 
                 <button
                     onClick={onExcelUpload}
-                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${role === "FREE"
+                    className={`flex items-center rounded-lg px-3 py-2 text-sm font-medium ${!isPremium
                             ? "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                             : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
                         }`}

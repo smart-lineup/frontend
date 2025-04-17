@@ -10,6 +10,7 @@ type AuthContextType = {
     fetchUser: () => Promise<void>;
     logout: () => Promise<void>;
     authLoading: boolean;
+    isPremium: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
     fetchUser: () => Promise.resolve(),
     logout: () => Promise.resolve(),
     authLoading: true,
+    isPremium: false,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -28,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [role, setRole] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [authLoading, setAuthLoading] = useState(true);
+    const [isPremium, setIsPremium] = useState<boolean>(false);
 
     const fetchUser = async () => {
         setAuthLoading(true);
@@ -40,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setEmail(null);
                 setRole(null);
                 setIsAuthenticated(false);
+                setIsPremium(false);
                 return;
             };
 
@@ -48,11 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setEmail(email);
             setRole(role);
             setIsAuthenticated(true);
+            setIsPremium(role !== "FREE")
         } catch (error) {
             setUsername(null);
             setEmail(null);
             setRole(null);
             setIsAuthenticated(false);
+            setIsPremium(false);
             console.error("Error fetching user:", error);
             return;
         } finally {
@@ -75,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
     return (
-        <AuthContext.Provider value={{ username, email, role, isAuthenticated, fetchUser, logout, authLoading }}>
+        <AuthContext.Provider value={{ username, email, role, isAuthenticated, fetchUser, logout, authLoading, isPremium }}>
             {children}
         </AuthContext.Provider>
     )

@@ -20,6 +20,7 @@ import FeedbackPage from './pages/feedback/feedback';
 import AttendeeFullPage from './pages/attendee/AttendeeFullPage';
 import AttendeeView from './pages/attendee/AttendeeView';
 import CancelPage from './pages/attendee/CancelPage';
+import BetaInfoPage from './pages/beta/BetaInfoPage';
 
 function App() {
     return (
@@ -37,7 +38,8 @@ function App() {
                         <Route path='/find/password' element={<FindPasswordPage />} />
                         <Route path='/find/password/reset' element={<ChangePasswordPage />} />
                         <Route path='/pricing' element={<PricingPage />} />
-                        <Route path='/payment' element={<PaymentPage/>} />
+                        {/* <Route path='/payment' element={<PaymentPage/>} /> */}
+                        <Route path='/payment' element={<BetaInfoPage/>} />
                         <Route path='/payment/success' element={<PaymentProcessing />} />
                         <Route path='/payment/pay/success' element={<PaymentSuccessPage />} />
                         <Route path='/settings' element={<SettingsPage/>}/>
@@ -45,6 +47,7 @@ function App() {
                         <Route path="/attendee/full" element={<AttendeeFullPage />} />
                         <Route path="/attendee/view/:uuid" element={<AttendeeView />} />
                         <Route path="/cancel" element={<CancelPage />} />
+                        <Route path='/beta' element={< BetaInfoPage />} />
                     </Routes>
                 </DarkModeProvider>
             </BrowserRouter>

@@ -62,7 +62,7 @@ const LinePage: React.FC = () => {
 
   const [showQueuePositionToAttendee, setShowQueuePositionToAttendee] = useState(false)
 
-  const { username, isAuthenticated, authLoading, role } = useAuth()
+  const { username, isAuthenticated, authLoading, isPremium } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -122,7 +122,7 @@ const LinePage: React.FC = () => {
 
   // 라인 추가 제한 모달 표시 함수
   const handleAddLineClick = () => {
-    if (role === "FREE" && lines.length >= 2) {
+    if (!isPremium && lines.length >= 2) {
       setLimitModal({
         isOpen: true,
         title: "라인 개수 제한",
@@ -262,7 +262,7 @@ const LinePage: React.FC = () => {
     if (!selectedLine) return
 
     // FREE 사용자이고 이미 20명 이상의 대기자가 있는 경우 제한
-    if (role === "FREE" && queues.length >= 20) {
+    if (!isPremium && queues.length >= 20) {
       setLimitModal({
         isOpen: true,
         title: "대기자 수 제한",
@@ -332,7 +332,7 @@ const LinePage: React.FC = () => {
 
   const handleExcelUploadClick = () => {
     // FREE 사용자인 경우 제한 모달 표시
-    if (role === "FREE") {
+    if (!isPremium) {
       setLimitModal({
         isOpen: true,
         title: "엑셀 업로드 제한",
@@ -401,7 +401,7 @@ const LinePage: React.FC = () => {
     if (!selectedLine || excelData.length === 0) return
 
     // FREE 사용자
-    if (role === "FREE") {
+    if (!isPremium) {
       setLimitModal({
         isOpen: true,
         title: "엑셀 업로드 제한",
@@ -438,7 +438,7 @@ const LinePage: React.FC = () => {
 
   const handleExcelDownload = () => {
     // FREE 사용자인 경우 제한
-    if (role === "FREE") {
+    if (!isPremium) {
       setLimitModal({
         isOpen: true,
         title: "엑셀 다운로드 제한",
@@ -629,7 +629,7 @@ const LinePage: React.FC = () => {
   // 대기자 추가 버튼 클릭 핸들러
   const handleAddAttendeeClick = () => {
     // FREE 사용자이고 이미 20명 이상의 대기자가 있는 경우 제한
-    if (role === "FREE" && queues.length >= 20) {
+    if (!isPremium && queues.length >= 20) {
       setLimitModal({
         isOpen: true,
         title: "대기자 수 제한",
@@ -669,7 +669,7 @@ const LinePage: React.FC = () => {
               onAddLine={handleAddLine}
               onEditLine={handleEditLine}
               onAddLineClick={handleAddLineClick}
-              role={role || "FREE"}
+              isPremium={isPremium}
             />
 
             {/* Main Content */}
@@ -693,7 +693,7 @@ const LinePage: React.FC = () => {
                       onOpenSettings={() => setShowSettingsModal(true)}
                       fileInputRef={fileInputRef}
                       handleExcelUpload={handleExcelUpload}
-                      role={role || "FREE"}
+                      isPremium={isPremium}
                     />
 
                     {showQRCode && <QRCodeModal shareUrl={shareUrl} onClose={toggleQRCode} />}

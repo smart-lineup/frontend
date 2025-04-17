@@ -9,7 +9,7 @@ import axios from "axios"
 import config from "../../config"
 
 export default function FeedbackForm() {
-    const { isAuthenticated, role } = useAuth()
+    const { isAuthenticated, isPremium } = useAuth()
     const navigate = useNavigate()
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
@@ -39,7 +39,7 @@ export default function FeedbackForm() {
                 {
                     title,
                     content,
-                    isPremium: role === "PREMIUM",
+                    isPremium,
                 },
                 { withCredentials: true },
             )
@@ -67,7 +67,7 @@ export default function FeedbackForm() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">프리미엄 사용자 여부</label>
                 </div>
 
-                {role === "PREMIUM" ? (
+                {isPremium ? (
                     <div className="text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
                         프리미엄 사용자로 건의됩니다.
                     </div>

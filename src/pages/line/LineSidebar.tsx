@@ -15,7 +15,7 @@ interface LineSidebarProps {
     onAddLine: (name: string) => void
     onEditLine: (id: number, name: string) => void
     onAddLineClick: () => void // 새로 추가된 prop
-    role: string // 새로 추가된 prop
+    isPremium: boolean
 }
 
 const LineSidebar: React.FC<LineSidebarProps> = ({
@@ -28,7 +28,7 @@ const LineSidebar: React.FC<LineSidebarProps> = ({
     onAddLine,
     onEditLine,
     onAddLineClick, // 새로 추가된 prop
-    role, // 새로 추가된 prop
+    isPremium
 }) => {
     const [showAddLine, setShowAddLine] = useState(false)
     const [newLineName, setNewLineName] = useState("")
@@ -49,7 +49,7 @@ const LineSidebar: React.FC<LineSidebarProps> = ({
 
     const handleAddLineButtonClick = () => {
         // FREE 사용자이고 이미 2개 이상의 라인이 있는 경우 제한 모달 표시
-        if (role === "FREE" && lines.length >= 2) {
+        if (!isPremium && lines.length >= 2) {
             onAddLineClick() // 제한 모달 표시 함수 호출
             return
         }
