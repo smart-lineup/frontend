@@ -33,7 +33,7 @@ const BetaInfoPage: React.FC = () => {
                             <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                                 <p className="text-blue-800 dark:text-blue-300">
                                     현재 Smart Line Up은 베타테스트 중입니다. <br />
-                                    베타테스트 기간 동안에는 모든 프리미엄 기능을 무료로 사용하실 수 있습니다.
+                                    베타테스트 기간 동안에는 결제없이 이용할 수 있습니다.
                                 </p>
                             </div>
 
@@ -65,7 +65,7 @@ const BetaInfoPage: React.FC = () => {
                             <h2 className="text-xl font-semibold mb-4">베타테스트 기간</h2>
                             <p className="mb-8 text-gray-600 dark:text-gray-400">
                                 베타테스트는 2025년 5월 31일까지 진행될 예정입니다. <br />
-                                베타테스트 종료 후에는 정식 서비스로 전환되며, 프리미엄 기능을 계속 이용하시려면 구독이 필요합니다.<br />
+                                베타테스트 종료 후에는 정식 서비스로 전환되며, 프리미엄 기능을 계속 이용하시려면 구독이 필요합니다.
                             </p>
 
                             <div className="text-center">
