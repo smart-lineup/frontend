@@ -19,7 +19,7 @@ const Signup: React.FC = () => {
 
     const onSubmit: SubmitHandler<FormInput> = async (data) => {
         try {
-            const response = await axios.post(`${config.backend}/auth/signup`, {
+            await axios.post(`${config.backend}/auth/signup`, {
                 name: data.name,
                 email: data.email,
                 password: data.password

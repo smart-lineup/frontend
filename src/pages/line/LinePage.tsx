@@ -62,7 +62,7 @@ const LinePage: React.FC = () => {
 
   const [showQueuePositionToAttendee, setShowQueuePositionToAttendee] = useState(false)
 
-  const { username, isAuthenticated, authLoading, isPremium } = useAuth()
+  const { isAuthenticated, authLoading, isPremium } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -663,7 +663,6 @@ const LinePage: React.FC = () => {
               lines={lines}
               selectedLine={selectedLine}
               loading={loading}
-              error={error}
               onSelectLine={handleSelectLine}
               onDeleteLine={handleDeleteLine}
               onAddLine={handleAddLine}

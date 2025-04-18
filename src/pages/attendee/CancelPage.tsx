@@ -1,15 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useLocation } from "react-router-dom"
 import { CheckCircle } from "lucide-react"
 import { useDarkMode } from "../../components/DarkModeContext"
 
 const CancelPage: React.FC = () => {
     const { darkMode } = useDarkMode()
-    const location = useLocation()
-    const queryParams = new URLSearchParams(location.search)
-    const lineName = queryParams.get("lineName") || "대기열"
 
     return (
         <div className={darkMode ? "dark" : ""}>

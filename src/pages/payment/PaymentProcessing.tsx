@@ -1,5 +1,4 @@
 import axios from "axios";
-import type React from "react"
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import config from "../../config";

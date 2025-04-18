@@ -33,7 +33,7 @@ const ChangePasswordPage: React.FC = () => {
 
     const onSubmit: SubmitHandler<ChangePasswordInput> = async (data) => {
         try {
-            const response = await axios.post(`${config.backend}/auth/password/reset`, { email: email, token: token, password: data.password });
+            await axios.post(`${config.backend}/auth/password/reset`, { email: email, token: token, password: data.password });
             setModalTitle("비밀번호 변경 성공!");
             setModalMessage("비밀번호 변경에 성공했습니다.");
             setModalButtonColor("bg-green-600 hover:bg-green-500");

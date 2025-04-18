@@ -9,12 +9,11 @@ interface LineSidebarProps {
     lines: Line[]
     selectedLine: Line | null
     loading: boolean
-    error: string | null
     onSelectLine: (line: Line) => void
     onDeleteLine: (id: number) => void
     onAddLine: (name: string) => void
     onEditLine: (id: number, name: string) => void
-    onAddLineClick: () => void // 새로 추가된 prop
+    onAddLineClick: () => void
     isPremium: boolean
 }
 
@@ -22,12 +21,11 @@ const LineSidebar: React.FC<LineSidebarProps> = ({
     lines,
     selectedLine,
     loading,
-    error,
     onSelectLine,
     onDeleteLine,
     onAddLine,
     onEditLine,
-    onAddLineClick, // 새로 추가된 prop
+    onAddLineClick,
     isPremium
 }) => {
     const [showAddLine, setShowAddLine] = useState(false)

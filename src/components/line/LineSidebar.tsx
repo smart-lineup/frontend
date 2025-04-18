@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight, ChevronDown, MoreHorizontal, Plus, Trash, Menu, X, Edit } from 'lucide-react';
+import { MoreHorizontal, Plus, Trash, Menu, X, Edit } from 'lucide-react';
 
 interface Queue {
     id: number;

@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { useDarkMode } from "../../components/DarkModeContext"
 import { CheckCircle, ArrowRight } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 const PaymentSuccessPage: React.FC = () => {
   const { darkMode } = useDarkMode()

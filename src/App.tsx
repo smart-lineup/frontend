@@ -11,7 +11,7 @@ import LinePage from './pages/line/LinePage';
 import { DarkModeProvider } from './components/DarkModeContext';
 import AttendeeInputPage from './pages/attendee/AttendeeInputPage';
 import { AuthProvider } from './components/AuthContext';
-import PaymentPage from './pages/payment/PaymentPage';
+// import PaymentPage from './pages/payment/PaymentPage';
 import PaymentProcessing from './pages/payment/PaymentProcessing';
 import PaymentSuccessPage from './pages/payment/PaymentSuccess';
 import PricingPage from './pages/payment/Pricing';

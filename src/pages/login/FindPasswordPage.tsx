@@ -63,7 +63,7 @@ const FindPasswordPage: React.FC = () => {
 
     const handleTokenSubmit: SubmitHandler<FindPasswordInput> = async (data) => {
         try {
-            const response = await axios.post(`${config.backend}/auth/password/verify`, { email: data.email, token: data.token });
+            await axios.post(`${config.backend}/auth/password/verify`, { email: data.email, token: data.token });
             // If the verify is successful
             setModalTitle("인증 성공!");
             setModalMessage("인증에 성공했습니다.");

@@ -33,11 +33,6 @@ const Navbar: React.FC = () => {
         setIsMobileMenuOpen(false)
     }
 
-    const handleGoToPricing = () => {
-        navigate("/pricing")
-        setIsMobileMenuOpen(false)
-    }
-
     const handleGoToFeedback = () => {
         navigate("/feedback")
         setIsMobileMenuOpen(false)

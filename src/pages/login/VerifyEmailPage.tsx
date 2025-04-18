@@ -23,7 +23,7 @@ const VerifyEmailPage: React.FC = () => {
                 return;
             }
 
-            const response = await axios.post<VerifyEmailResponse>(
+            await axios.post<VerifyEmailResponse>(
                 `${config.backend}/auth/verify-email`,
                 { token: token }
             );
