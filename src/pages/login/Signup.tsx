@@ -51,7 +51,7 @@ const Signup: React.FC = () => {
                     계정 생성하기
                 </h2>
                 <p className="mt-2 text-center text-sm leading-5 text-gray-500 max-w">
-                    <a href={`${config.frontend}/login`} className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition ease-in-out duration-150">
+                    <a href="/login" className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition ease-in-out duration-150">
                         로그인으로 가기
                     </a>
                 </p>
